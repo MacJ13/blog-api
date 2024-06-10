@@ -5,6 +5,10 @@ const app = express();
 
 const { PORT } = require("./configs/main.config");
 
+const connectDB = require("./services/db.service");
+
+connectDB();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
