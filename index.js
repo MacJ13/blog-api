@@ -7,15 +7,14 @@ const { PORT } = require("./configs/main.config");
 
 const connectDB = require("./services/db.service");
 
+const indexRouter = require("./routes/index.route");
+
 connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/", function (req, res) {
-  res.status(200).json({ message: "Hello world" });
-});
-
+app.use("/", indexRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
@@ -33,5 +32,5 @@ app.use(function (err, req, res, next) {
 });
 
 app.listen(PORT, () => {
-  console.log(`run server on local host: ${3000}`);
+  console.log(`run server on local host: ${PORT}`);
 });
