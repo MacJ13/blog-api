@@ -3,9 +3,15 @@ const User = require("../models/user.model");
 
 const bcrypt = require("bcrypt");
 
+const dotenv = require("dotenv");
+
+const jwt = require("jsonwebtoken");
+
 // exports.login_user = async(req, res) => {
 //     const
 // }
+
+dotenv.config();
 
 exports.signup_user = async (req, res) => {
   if (!req.body.email || !req.body.nickname || !req.body.password)
@@ -54,7 +60,21 @@ exports.login_user = async (req, res) => {
 
   if (!match) return res.status(400).json({ message: "incorrect password" });
 
-  return res
-    .status(200)
-    .json({ user: existUser, message: "you're logged in!" });
+  const token = jwt.sign(
+    {
+      email: existUser.email,
+      password: existUser.password,
+      nickname: existUser.nickname,
+    },
+    process.env.JWT_SECRET_KEY,
+    { expiresIn: "300s" }
+  );
+
+  return res.status(200).json({ token, message: "you're logged in!" });
+};
+
+exports.test_logged_user = (req, res) => {
+  return res.json({
+    message: "You are authorized to access this resource",
+  });
 };

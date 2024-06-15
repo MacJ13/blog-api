@@ -9,6 +9,8 @@ const connectDB = require("./services/db.service");
 
 const indexRouter = require("./routes/index.route");
 
+require("./services/passport.service");
+
 connectDB();
 
 app.use(express.json());
