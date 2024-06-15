@@ -65,16 +65,21 @@ exports.login_user = async (req, res) => {
       email: existUser.email,
       password: existUser.password,
       nickname: existUser.nickname,
+      id: existUser._id,
     },
     process.env.JWT_SECRET_KEY,
     { expiresIn: "300s" }
   );
 
-  return res.status(200).json({ token, message: "you're logged in!" });
+  return res
+    .status(200)
+    .json({ token, user: existUser, message: "you're logged in!" });
 };
 
-exports.test_logged_user = (req, res) => {
-  return res.json({
-    message: "You are authorized to access this resource",
-  });
+exports.user_index = async (req, res) => {
+  const user = await User.findById(req.params.userId).exec();
+
+  if (!user) return res.status(404).json({ message: "User doesn't exist!" });
+
+  return res.status(200).json({ user, message: "You are logged in!" });
 };

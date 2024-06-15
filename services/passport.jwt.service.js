@@ -6,7 +6,7 @@ const User = require("../models/user.model");
 
 const jwt_strategy = new JwtStrategy(JWT_OPTIONS, async (payload, done) => {
   try {
-    const user = await User.findOne({ email: payload.email });
+    const user = await User.findById(payload.id);
 
     console.log("in jwt strategy!!!");
     if (user) return done(null, user);
