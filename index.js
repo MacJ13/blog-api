@@ -3,15 +3,19 @@ const createError = require("http-errors");
 
 const app = express();
 
+const passport = require("passport");
+
 const { PORT } = require("./configs/main.config");
 
 const connectDB = require("./services/db.service");
 
 const indexRouter = require("./routes/index.route");
 
-require("./services/passport.service");
+const { jwt_strategy } = require("./services/passport.jwt.service");
 
 connectDB();
+
+passport.use(jwt_strategy);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
