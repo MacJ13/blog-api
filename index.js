@@ -11,6 +11,7 @@ const connectDB = require("./services/db.service");
 
 const indexRouter = require("./routes/index.route");
 const userRouter = require("./routes/user.route");
+const postRouter = require("./routes/post.route");
 
 const { jwt_strategy } = require("./services/passport.jwt.service");
 
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/", indexRouter);
 app.use("/user", userRouter);
+app.use("/post", postRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

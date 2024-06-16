@@ -6,7 +6,7 @@ const postController = require("../controllers/post.controller");
 
 const userController = require("../controllers/user.controller");
 
-router.get("/", postController.post_list);
+router.get("/", postController.post_index);
 
 router.post("/signup", userController.signup_user);
 

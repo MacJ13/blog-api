@@ -7,7 +7,7 @@ const postSchema = new Schema({
   text: { type: String, required: true, minLength: 8 },
   author: { type: Schema.Types.ObjectId, ref: "user", required: true },
   timeStamp: { type: Date, default: Date.now },
-  hidden: { type: Boolean, default: true },
+  hidden: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("post", postSchema);
