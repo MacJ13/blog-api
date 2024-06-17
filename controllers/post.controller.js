@@ -35,3 +35,11 @@ exports.post_create = async (req, res) => {
 
   return res.status(200).json({ post: newPost, message: "Post was created" });
 };
+
+exports.post_detail = async (req, res) => {
+  const post = await Post.findById(req.params.postId).exec();
+
+  if (!post) return res.status(404).json({ message: "Post doesn't exist" });
+
+  return res.status(200).json({ post });
+};
