@@ -11,4 +11,6 @@ router.get("/all", checkAuth, postController.post_list);
 
 router.get("/:postId", checkAuth, postController.post_detail);
 
+router.put("/:postId", checkAuth, postController.update_post);
+
 module.exports = router;

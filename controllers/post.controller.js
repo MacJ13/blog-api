@@ -18,7 +18,6 @@ exports.post_index = async (req, res) => {
 };
 
 exports.post_create = async (req, res) => {
-  console.log(req.user);
   if (!req.user) return res.status(400).json({ message: "Login or singup!" });
 
   if (!req.body.title || !req.body.text)
@@ -34,6 +33,29 @@ exports.post_create = async (req, res) => {
   await newPost.save();
 
   return res.status(200).json({ post: newPost, message: "Post was created" });
+};
+
+exports.update_post = async (req, res) => {
+  if (!req.user) return res.status(400).json({ message: "post doesn't exist" });
+
+  if (!req.body.title || !req.body.text) {
+    return res.status(400).json({ message: "Enter title and text" });
+  }
+
+  const post = await Post.findById(req.params.postId);
+
+  if (req.user.id !== post._id)
+    return res
+      .status(400)
+      .json({ message: "You cannot change other user post" });
+
+  post.title = req.body.title;
+  post.text = req.body.text;
+  post.hidden = req.body.hidden || post.hidden;
+
+  await post.save();
+
+  return res.status(200).json({ message: "Post has been updated" });
 };
 
 exports.post_detail = async (req, res) => {
