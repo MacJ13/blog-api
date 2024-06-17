@@ -43,3 +43,25 @@ exports.post_detail = async (req, res) => {
 
   return res.status(200).json({ post });
 };
+
+exports.post_list = async (req, res) => {
+  const posts = await Post.find().sort({ timeStamp: 1 }).exec();
+
+  const limit = 15;
+
+  const page = Number(req.query.page) || 1;
+
+  const start = (page - 1) * limit;
+
+  const end = page * limit;
+
+  const slicePosts = posts.slice(start, end);
+
+  // console.log(posts.length);
+
+  // console.log(req.query);
+  // console.log(slicePosts);
+  // console.log({ start, end });
+
+  return res.status(200).json({ posts: slicePosts, page, limit });
+};
