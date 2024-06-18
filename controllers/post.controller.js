@@ -36,26 +36,35 @@ exports.post_create = async (req, res) => {
 };
 
 exports.update_post = async (req, res) => {
-  if (!req.user) return res.status(400).json({ message: "post doesn't exist" });
+  try {
+    if (!req.user)
+      return res
+        .status(400)
+        .json({ message: "Login or signup to update post" });
 
-  if (!req.body.title || !req.body.text) {
-    return res.status(400).json({ message: "Enter title and text" });
+    if (!req.body.title || !req.body.text) {
+      return res.status(400).json({ message: "Enter title and text" });
+    }
+    const post = await Post.findOne({ _id: req.params.postId }).exec();
+
+    const authorId = post.author._id;
+
+    if (req.user.id.toString() !== authorId.toString())
+      return res
+        .status(400)
+        .json({ message: "You cannot change other user post" });
+
+    post.title = req.body.title;
+    post.text = req.body.text;
+    post.hidden = req.body.hidden || post.hidden;
+
+    await post.save();
+
+    return res.status(200).json({ message: "Post has been updated" });
+  } catch (err) {
+    if (err.name === "CastError")
+      return res.status(404).json({ message: "Invalid post id!", err });
   }
-
-  const post = await Post.findById(req.params.postId);
-
-  if (req.user.id !== post._id)
-    return res
-      .status(400)
-      .json({ message: "You cannot change other user post" });
-
-  post.title = req.body.title;
-  post.text = req.body.text;
-  post.hidden = req.body.hidden || post.hidden;
-
-  await post.save();
-
-  return res.status(200).json({ message: "Post has been updated" });
 };
 
 exports.post_detail = async (req, res) => {
