@@ -1,4 +1,5 @@
 const Post = require("../models/post.model");
+const Comment = require("../models/comment.model");
 
 // const asyncHandler = require("express-async-handler");
 
@@ -50,8 +51,6 @@ exports.update_post = async (req, res) => {
 
     const authorId = post.author._id;
 
-    console.log(req.body);
-
     if (req.user.id.toString() !== authorId.toString())
       return res
         .status(400)
@@ -98,11 +97,19 @@ exports.post_delete = async (req, res) => {
 };
 
 exports.post_detail = async (req, res) => {
-  const post = await Post.findById(req.params.postId).exec();
+  // const post = await Post.findById(req.params.postId).exec();
+
+  const [post, commentsByPost] = await Promise.all([
+    Post.findById(req.params.postId, "title text author timeStamp").populate(
+      "author",
+      "nickname"
+    ),
+    Comment.find({ post: req.params.postId }, "description author timestamp"),
+  ]);
 
   if (!post) return res.status(404).json({ message: "Post doesn't exist" });
 
-  return res.status(200).json({ post });
+  return res.status(200).json({ post, comments: commentsByPost });
 };
 
 exports.post_list = async (req, res) => {
