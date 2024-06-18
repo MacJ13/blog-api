@@ -1,5 +1,6 @@
 const { SALT_ROUNDS } = require("../configs/bcrypt.config");
 const User = require("../models/user.model");
+const Post = require("../models/post.model");
 
 const bcrypt = require("bcrypt");
 
@@ -76,10 +77,22 @@ exports.login_user = async (req, res) => {
     .json({ token, user: existUser, message: "you're logged in!" });
 };
 
-exports.user_index = async (req, res) => {
-  const user = await User.findById(req.params.userId).exec();
+exports.user_detail = async (req, res) => {
+  // const user = await User.findById(req.params.userId).exec();
+
+  const [user, postsByUser] = await Promise.all([
+    User.findById(req.params.userId, "nickname"),
+    Post.find(
+      { author: req.params.userId, hidden: false },
+      "title author timeStamp"
+    ),
+  ]);
+
+  // console.log(values);
 
   if (!user) return res.status(404).json({ message: "User doesn't exist!" });
 
-  return res.status(200).json({ user, message: "You are logged in!" });
+  return res
+    .status(200)
+    .json({ user, posts: postsByUser, message: "You are logged in!" });
 };

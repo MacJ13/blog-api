@@ -50,6 +50,8 @@ exports.update_post = async (req, res) => {
 
     const authorId = post.author._id;
 
+    console.log(req.body);
+
     if (req.user.id.toString() !== authorId.toString())
       return res
         .status(400)
@@ -57,7 +59,7 @@ exports.update_post = async (req, res) => {
 
     post.title = req.body.title;
     post.text = req.body.text;
-    post.hidden = req.body.hidden || post.hidden;
+    post.hidden = Boolean(req.body.hidden);
 
     await post.save();
 
