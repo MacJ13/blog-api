@@ -9,9 +9,11 @@ const { PORT } = require("./configs/main.config");
 
 const connectDB = require("./services/db.service");
 
-const indexRouter = require("./routes/index.route");
-const userRouter = require("./routes/user.route");
-const postRouter = require("./routes/post.route");
+// const indexRouter = require("./routes/api/index.route");
+// const userRouter = require("./routes/api/user.route");
+// const postRouter = require("./routes/api/post.route");
+
+const apiRouter = require("./routes/api/api.route");
 
 const { jwt_strategy } = require("./services/passport.jwt.service");
 
@@ -22,9 +24,11 @@ passport.use(jwt_strategy);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/", indexRouter);
-app.use("/user", userRouter);
-app.use("/post", postRouter);
+// app.use("/", indexRouter);
+// app.use("/user", userRouter);
+// app.use("/post", postRouter);
+app.use("/api", apiRouter);
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
