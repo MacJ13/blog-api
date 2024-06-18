@@ -13,4 +13,6 @@ router.get("/:postId", checkAuth, postController.post_detail);
 
 router.put("/:postId", checkAuth, postController.update_post);
 
+router.delete("/:postId", checkAuth, postController.post_delete);
+
 module.exports = router;

@@ -45,6 +45,7 @@ exports.update_post = async (req, res) => {
     if (!req.body.title || !req.body.text) {
       return res.status(400).json({ message: "Enter title and text" });
     }
+
     const post = await Post.findOne({ _id: req.params.postId }).exec();
 
     const authorId = post.author._id;
@@ -61,6 +62,33 @@ exports.update_post = async (req, res) => {
     await post.save();
 
     return res.status(200).json({ message: "Post has been updated" });
+  } catch (err) {
+    if (err.name === "CastError")
+      return res.status(404).json({ message: "Invalid post id!", err });
+  }
+};
+
+exports.post_delete = async (req, res) => {
+  try {
+    if (!req.user)
+      return res
+        .status(400)
+        .json({ message: "Login or singup to remove post!" });
+
+    const post = await Post.findById(req.params.postId).exec();
+
+    if (!post) return res.status(400).json({ message: "post doesn't exist" });
+
+    const authorId = post.author._id;
+
+    if (req.user.id !== authorId)
+      return res
+        .status(400)
+        .json({ message: "You cannot change other user post" });
+
+    await post.deleteOne();
+
+    return res.status(200).json({ message: "Post has been removed!" });
   } catch (err) {
     if (err.name === "CastError")
       return res.status(404).json({ message: "Invalid post id!", err });
