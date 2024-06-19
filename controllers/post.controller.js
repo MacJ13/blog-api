@@ -104,7 +104,10 @@ exports.post_detail = async (req, res) => {
       "author",
       "nickname"
     ),
-    Comment.find({ post: req.params.postId }, "description author timestamp"),
+    Comment.find({ post: req.params.postId }, "text timestamp").populate(
+      "author",
+      "nickname"
+    ),
   ]);
 
   if (!post) return res.status(404).json({ message: "Post doesn't exist" });
@@ -132,4 +135,28 @@ exports.post_list = async (req, res) => {
   // console.log({ start, end });
 
   return res.status(200).json({ posts: slicePosts, page, limit });
+};
+
+exports.add_comment = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId).exec();
+
+    if (!post) return res.status(404).json({ message: "post doesn't exist" });
+
+    if (!req.body.text)
+      return res.status(400).json({ message: "Enter comment text!" });
+
+    const comment = new Comment({
+      text: req.body.text,
+      post: req.params.postId,
+      author: req.user._id,
+    });
+
+    await comment.save();
+
+    return res.status(200).json({ message: "Comment was added" });
+  } catch (err) {
+    if (err.name === "CastError")
+      return res.status(404).json({ message: "Invalid post id!", err });
+  }
 };

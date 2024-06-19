@@ -15,4 +15,6 @@ router.put("/:postId", checkAuth, postController.update_post);
 
 router.delete("/:postId", checkAuth, postController.post_delete);
 
+router.post("/:postId/comment/add", checkAuth, postController.add_comment);
+
 module.exports = router;
