@@ -82,12 +82,15 @@ exports.post_delete = async (req, res) => {
 
     const authorId = post.author._id;
 
-    if (req.user.id !== authorId)
+    if (req.user.id.toString() !== authorId.toString())
       return res
         .status(400)
         .json({ message: "You cannot change other user post" });
 
-    await post.deleteOne();
+    await Promise.all([
+      post.deleteOne(),
+      Comment.deleteMany({ post: req.params.postId }),
+    ]);
 
     return res.status(200).json({ message: "Post has been removed!" });
   } catch (err) {
