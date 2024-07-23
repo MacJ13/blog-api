@@ -17,13 +17,15 @@ const apiRouter = require("./routes/api/api.route");
 
 const { jwt_strategy } = require("./services/passport.jwt.service");
 
+const cookieParser = require("cookie-parser");
+
 connectDB();
 
 passport.use(jwt_strategy);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
+app.use(cookieParser());
 // app.use("/", indexRouter);
 // app.use("/user", userRouter);
 // app.use("/post", postRouter);
