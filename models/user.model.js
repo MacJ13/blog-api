@@ -7,6 +7,7 @@ const userSchema = new Schema({
   nickname: { type: String, required: true, minLength: 3 },
   password: { type: String, required: true },
   favorites: [{ type: Schema.Types.ObjectId, ref: "post" }],
+  refreshToken: [{ type: String }],
 });
 
 module.exports = mongoose.model("user", userSchema);
