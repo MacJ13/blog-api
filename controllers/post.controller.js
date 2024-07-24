@@ -19,7 +19,8 @@ exports.post_index = async (req, res) => {
 };
 
 exports.post_create = async (req, res) => {
-  if (!req.user) return res.status(400).json({ message: "Login or singup!" });
+  if (!req.userAuth)
+    return res.status(400).json({ message: "Login or singup!" });
 
   if (!req.body.title || !req.body.text)
     return res.status(400).json({ message: "Enter title and text" });
@@ -27,7 +28,7 @@ exports.post_create = async (req, res) => {
   const newPost = new Post({
     title: req.body.title,
     text: req.body.text,
-    author: req.user._id,
+    author: req.userAuth.id,
     hidden: req.body.hidden,
   });
 
@@ -38,7 +39,7 @@ exports.post_create = async (req, res) => {
 
 exports.update_post = async (req, res) => {
   try {
-    if (!req.user)
+    if (!req.userAuth)
       return res
         .status(400)
         .json({ message: "Login or signup to update post" });
@@ -49,9 +50,11 @@ exports.update_post = async (req, res) => {
 
     const post = await Post.findOne({ _id: req.params.postId }).exec();
 
+    if (!post) return res.status(404).json({ message: "post doesn't exist" });
+
     const authorId = post.author._id;
 
-    if (req.user.id.toString() !== authorId.toString())
+    if (req.userAuth.id.toString() !== authorId.toString())
       return res
         .status(400)
         .json({ message: "You cannot change other user post" });
@@ -71,21 +74,21 @@ exports.update_post = async (req, res) => {
 
 exports.post_delete = async (req, res) => {
   try {
-    if (!req.user)
+    if (!req.userAuth)
       return res
         .status(400)
         .json({ message: "Login or singup to remove post!" });
 
     const post = await Post.findById(req.params.postId).exec();
 
-    if (!post) return res.status(400).json({ message: "post doesn't exist" });
+    if (!post) return res.status(404).json({ message: "post doesn't exist" });
 
     const authorId = post.author._id;
 
-    if (req.user.id.toString() !== authorId.toString())
+    if (req.userAuth.id.toString() !== authorId.toString())
       return res
         .status(400)
-        .json({ message: "You cannot change other user post" });
+        .json({ message: "You cannot remove other user post" });
 
     await Promise.all([
       post.deleteOne(),
@@ -131,12 +134,6 @@ exports.post_list = async (req, res) => {
 
   const slicePosts = posts.slice(start, end);
 
-  // console.log(posts.length);
-
-  // console.log(req.query);
-  // console.log(slicePosts);
-  // console.log({ start, end });
-
   return res.status(200).json({ posts: slicePosts, page, limit });
 };
 
@@ -147,15 +144,15 @@ exports.add_comment = async (req, res) => {
     if (!post) return res.status(404).json({ message: "post doesn't exist" });
 
     if (!req.body.text)
-      return res.status(400).json({ message: "Enter comment text!" });
+      return res.status(404).json({ message: "Enter comment text!" });
 
-    const comment = new Comment({
+    const newComment = new Comment({
       text: req.body.text,
       post: req.params.postId,
-      author: req.user._id,
+      author: req.userAuth.id,
     });
 
-    await comment.save();
+    await newComment.save();
 
     return res.status(200).json({ message: "Comment was added" });
   } catch (err) {
