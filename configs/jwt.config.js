@@ -9,4 +9,18 @@ const JWT_OPTIONS = {
   secretOrKey: secretKey,
 };
 
-module.exports = { JWT_OPTIONS };
+const ACCESS_TOKEN_EXPIRE = { expiresIn: "1h" };
+
+const REFRESH_TOKEN_EXPIRE = { expiresIn: "7d" };
+
+const COOKIE_SETTINGS = {
+  httpOnly: true,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+module.exports = {
+  JWT_OPTIONS,
+  ACCESS_TOKEN_EXPIRE,
+  REFRESH_TOKEN_EXPIRE,
+  COOKIE_SETTINGS,
+};

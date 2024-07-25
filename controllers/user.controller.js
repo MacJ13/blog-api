@@ -8,6 +8,11 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 
 const jwt = require("jsonwebtoken");
+const {
+  REFRESH_TOKEN_EXPIRE,
+  ACCESS_TOKEN_EXPIRE,
+  COOKIE_SETTINGS,
+} = require("../configs/jwt.config");
 
 // exports.login_user = async(req, res) => {
 //     const
@@ -61,23 +66,23 @@ exports.login_user = async (req, res) => {
   };
 
   // create the JSonWbebToken  as string
-  const accessToken = jwt.sign(userData, process.env.JWT_SECRET_KEY, {
-    expiresIn: "300s",
-  });
+  const accessToken = jwt.sign(
+    userData,
+    process.env.JWT_SECRET_KEY,
+    ACCESS_TOKEN_EXPIRE
+  );
 
-  const newRefreshToken = jwt.sign(userData, process.env.JWT_REFRESH_KEY, {
-    expiresIn: "1d",
-  });
+  const newRefreshToken = jwt.sign(
+    userData,
+    process.env.JWT_REFRESH_KEY,
+    REFRESH_TOKEN_EXPIRE
+  );
 
   const newRefreshTokenArray = !cookies?.jwt
     ? existUser.refreshToken
     : existUser.refreshToken.filter((rt) => rt !== cookies.jwt);
 
-  if (cookies?.jwt)
-    res.cookie("jwt", newRefreshToken, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+  if (cookies?.jwt) res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
 
   // saving Refresh token with current user
   existUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
@@ -85,10 +90,7 @@ exports.login_user = async (req, res) => {
   // update current user
   await existUser.save();
 
-  res.cookie("jwt", newRefreshToken, {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-  });
+  res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
   return res.status(200).json({
     accessToken,
 
@@ -116,7 +118,7 @@ exports.user_logout = async (req, res) => {
     refreshToken: { $in: [refreshToken] },
   });
 
-  res.clearCookie("jwt", { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+  res.clearCookie("jwt", COOKIE_SETTINGS);
 
   if (!foundUser) {
     return res.status(204).json({ msg: "No content!" });
@@ -128,7 +130,7 @@ exports.user_logout = async (req, res) => {
 
   // secure: true - only serves on https
 
-  res.clearCookie("jwt", { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+  res.clearCookie("jwt", COOKIE_SETTINGS);
   return res.status(204).json({ msg: "No content! User log out" });
 };
 

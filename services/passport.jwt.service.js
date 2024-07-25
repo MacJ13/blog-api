@@ -1,5 +1,10 @@
 const passport = require("passport");
-const { JWT_OPTIONS } = require("../configs/jwt.config");
+const {
+  JWT_OPTIONS,
+  ACCESS_TOKEN_EXPIRE,
+  REFRESH_TOKEN_EXPIRE,
+  COOKIE_SETTINGS,
+} = require("../configs/jwt.config");
 const JwtStrategy = require("passport-jwt").Strategy;
 
 const User = require("../models/user.model");
@@ -25,50 +30,6 @@ const jwt_strategy = new JwtStrategy(JWT_OPTIONS, async (payload, done) => {
 });
 
 dotenv.config();
-
-// const checkAuth = passport.authenticate("jwt", { session: false });
-
-const checkAuth = (req, res, next) => {
-  return passport.authenticate(
-    "jwt",
-    { session: false },
-    (error, user, info, status) => {
-      // console.log({ error, user });
-      // get authorization property from request headers
-      const authHeader = req.headers["authorization"];
-
-      // console.log({ headers: req.headers, authHeader });
-
-      // check if property authorization exists
-      if (!authHeader)
-        return res
-          .status(401)
-          .json({ msg: "Token doesn't exist! Unauthorized message!" });
-
-      // extract token from authorization header requuest
-      const token = authHeader.split(" ")[1];
-
-      // verify token validtion
-      jwt.verify(
-        token,
-        process.env.JWT_SECRET_KEY,
-        // { ignoreExpiration: true },
-        function (err, decoded) {
-          if (err) {
-            return res.status(401).json({ msg: "Unauthorized message!" });
-          }
-
-          req.userAuth = decoded;
-
-          // console.log("Date now => ", Date.now() / 1000);
-          // console.log("result: ", decoded.exp - Date.now() / 1000);
-
-          return next();
-        }
-      );
-    }
-  )(req, res, next);
-};
 
 const handleRefreshToken = async (req, res) => {
   // get cookies from request cookies;
@@ -140,23 +101,24 @@ const handleRefreshToken = async (req, res) => {
       };
 
       // Create new access token and refresh toekn
-      const accessToken = jwt.sign(userData, process.env.JWT_SECRET_KEY, {
-        expiresIn: "300s",
-      });
+      const accessToken = jwt.sign(
+        userData,
+        process.env.JWT_SECRET_KEY,
+        ACCESS_TOKEN_EXPIRE
+      );
 
-      const newRefreshToken = jwt.sign(userData, process.env.JWT_REFRESH_KEY, {
-        expiresIn: "1d",
-      });
+      const newRefreshToken = jwt.sign(
+        userData,
+        process.env.JWT_REFRESH_KEY,
+        REFRESH_TOKEN_EXPIRE
+      );
 
       // saving RefreshToken with current user
       foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
 
       await foundUser.save();
 
-      res.cookie("jwt", newRefreshToken, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-      });
+      res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
 
       res.json({ accessToken });
     }
@@ -167,6 +129,5 @@ const handleRefreshToken = async (req, res) => {
 
 module.exports = {
   jwt_strategy,
-  checkAuth,
   handleRefreshToken,
 };
