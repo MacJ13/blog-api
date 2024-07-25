@@ -2,13 +2,13 @@ const express = require("express");
 
 const router = express.Router();
 
-const postController = require("../../controllers/post.controller");
+const postController = require("../controllers/post.controller");
 
-const userController = require("../../controllers/user.controller");
+const userController = require("../controllers/user.controller");
 const {
   handleRefreshToken,
   //   handleLogout,
-} = require("../../services/passport.jwt.service");
+} = require("../services/passport.jwt.service");
 
 router.get("/", postController.post_index);
 

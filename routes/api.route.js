@@ -7,7 +7,7 @@ const postRouter = require("./post.route");
 const commentRouter = require("./comment.route");
 
 // const { checkAuth } = require("../../services/passport.jwt.service");
-const checkAuth = require("../../middlewares/checkAuth.middleware");
+const checkAuth = require("../middlewares/checkAuth.middleware");
 
 router.use(checkAuth);
 router.use("/user", userRouter);

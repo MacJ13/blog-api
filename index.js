@@ -9,11 +9,11 @@ const { PORT } = require("./configs/main.config");
 
 const connectDB = require("./services/db.service");
 
-const indexRouter = require("./routes/api/index.route");
+const indexRouter = require("./routes/index.route");
 // const userRouter = require("./routes/api/user.route");
 // const postRouter = require("./routes/api/post.route");
 
-const apiRouter = require("./routes/api/api.route");
+const apiRouter = require("./routes/api.route");
 
 const { jwt_strategy } = require("./services/passport.jwt.service");
 
