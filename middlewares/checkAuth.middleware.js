@@ -32,7 +32,7 @@ module.exports = (req, res, next) => {
             return res.status(401).json({ msg: "Unauthorized message!" });
           }
           // create request userAuth object
-          res.userAuth = decoded;
+          req.userAuth = decoded;
 
           return next();
         }
