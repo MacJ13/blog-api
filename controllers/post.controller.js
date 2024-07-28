@@ -130,14 +130,12 @@ exports.post_delete = async (req, res) => {
 
     const post = await Post.findById(req.params.postId).exec();
 
-    if (!post) return res.status(404).json({ message: "post doesn't exist" });
+    if (!post) return res.status(404).json({ err: "post doesn't exist" });
 
     const authorId = post.author._id;
 
     if (req.userAuth.id.toString() !== authorId.toString())
-      return res
-        .status(400)
-        .json({ message: "You cannot remove other user post" });
+      return res.status(400).json({ err: "Unauthorized user" });
 
     await Promise.all([
       post.deleteOne(),
@@ -147,7 +145,7 @@ exports.post_delete = async (req, res) => {
     return res.status(200).json({ message: "Post has been removed!" });
   } catch (err) {
     if (err.name === "CastError")
-      return res.status(404).json({ message: "Invalid post id!", err });
+      return res.status(404).json({ err: "Post doesn't exist" });
   }
 };
 
