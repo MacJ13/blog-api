@@ -1,8 +1,9 @@
 const Post = require("../models/post.model");
 const Comment = require("../models/comment.model");
+
 const { body, validationResult } = require("express-validator");
+
 const {
-  TITLE_POST_LENGTH,
   POST_TITLE_LENGTH,
   POST_BODY_LENGTH,
   POSTS_PER_PAGE,
@@ -188,28 +189,4 @@ exports.post_list = async (req, res) => {
   const slicePosts = posts.slice(start, end);
 
   return res.status(200).json({ posts: slicePosts, page, limit });
-};
-
-exports.add_comment = async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.postId).exec();
-
-    if (!post) return res.status(404).json({ message: "post doesn't exist" });
-
-    if (!req.body.text)
-      return res.status(404).json({ message: "Enter comment text!" });
-
-    const newComment = new Comment({
-      text: req.body.text,
-      post: req.params.postId,
-      author: req.userAuth.id,
-    });
-
-    await newComment.save();
-
-    return res.status(200).json({ message: "Comment was added" });
-  } catch (err) {
-    if (err.name === "CastError")
-      return res.status(404).json({ message: "Invalid post id!", err });
-  }
 };

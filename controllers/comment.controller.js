@@ -1,4 +1,48 @@
+const { COMMENT_LENGTH } = require("../configs/main.config");
 const Comment = require("../models/comment.model");
+const Post = require("../models/post.model");
+const { body, validationResult } = require("express-validator");
+
+exports.comment_add = [
+  body("text")
+    .trim()
+    .notEmpty()
+    .withMessage("Comment not must be empty!")
+    .isLength(COMMENT_LENGTH)
+    .withMessage(`Comment must contain at least ${COMMENT_LENGTH} characters`),
+  async (req, res) => {
+    try {
+      // check authorized user exists
+      if (!req.userAuth)
+        return res.status(401).json({ err: "Unauthorized user" });
+
+      const post = await Post.findById(req.params.postId).exec();
+
+      if (!post) return res.status(404).json({ err: "Post doesn't exist" });
+
+      // check is validation correct
+      const result = validationResult(req);
+
+      if (!result.isEmpty()) {
+        const msgErrors = result.errors.map((err) => err.msg);
+        return res.status(404).json({ err: msgErrors });
+      }
+
+      const newComment = new Comment({
+        text: req.body.text,
+        post: req.params.postId,
+        author: req.userAuth.id,
+      });
+
+      await newComment.save();
+
+      return res.status(200).json({ message: "Comment has been added" });
+    } catch (err) {
+      if (err.name === "CastError")
+        return res.status(404).json({ err: "Post doesn't exist" });
+    }
+  },
+];
 
 exports.comment_edit = async (req, res) => {
   try {
