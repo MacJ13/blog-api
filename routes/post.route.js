@@ -5,7 +5,7 @@ const postController = require("../controllers/post.controller");
 
 router.post("/create", postController.post_create);
 
-router.get("/all", postController.post_list);
+// router.get("/all", postController.post_list);
 
 router.post("/:postId/comment/add", postController.add_comment);
 

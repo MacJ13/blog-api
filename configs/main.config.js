@@ -6,4 +6,6 @@ const POST_TITLE_LENGTH = 4;
 
 const POST_BODY_LENGTH = 8;
 
-module.exports = { PORT, POST_TITLE_LENGTH, POST_BODY_LENGTH };
+const POSTS_PER_PAGE = 12;
+
+module.exports = { PORT, POST_TITLE_LENGTH, POST_BODY_LENGTH, POSTS_PER_PAGE };

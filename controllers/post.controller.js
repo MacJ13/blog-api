@@ -5,6 +5,7 @@ const {
   TITLE_POST_LENGTH,
   POST_TITLE_LENGTH,
   POST_BODY_LENGTH,
+  POSTS_PER_PAGE,
 } = require("../configs/main.config");
 
 // const asyncHandler = require("express-async-handler");
@@ -128,7 +129,7 @@ exports.post_delete = async (req, res) => {
     if (!req.userAuth)
       return res.status(401).json({ err: "Unauthorized user" });
 
-    const post = await Post.findById(req.params.postId).exec();
+    const post = await Post.findById(req.params.postId, "title").exec();
 
     if (!post) return res.status(404).json({ err: "post doesn't exist" });
 
@@ -163,15 +164,20 @@ exports.post_detail = async (req, res) => {
     ),
   ]);
 
-  if (!post) return res.status(404).json({ message: "Post doesn't exist" });
+  if (!post) return res.status(404).json({ err: "Post doesn't exist" });
 
   return res.status(200).json({ post, comments: commentsByPost });
 };
 
 exports.post_list = async (req, res) => {
-  const posts = await Post.find().sort({ timeStamp: 1 }).exec();
+  // get all posts
+  const posts = await Post.find({ hidden: false }, "title author timeStamp")
+    .sort({ timeStamp: 1 })
+    .populate("author", "nickname")
+    .exec();
 
-  const limit = 15;
+  // create posts per query page
+  const limit = POSTS_PER_PAGE;
 
   const page = Number(req.query.page) || 1;
 
