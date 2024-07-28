@@ -44,30 +44,48 @@ exports.comment_add = [
   },
 ];
 
-exports.comment_edit = async (req, res) => {
-  try {
-    if (!req.body.text) return res.status(400).json({ msg: "text was empty!" });
+exports.comment_edit = [
+  body("text")
+    .trim()
+    .notEmpty()
+    .withMessage("Comment not must be empty!")
+    .isLength(COMMENT_LENGTH)
+    .withMessage(`Comment must contain at least ${COMMENT_LENGTH} characters`),
+  async (req, res) => {
+    try {
+      if (!req.userAuth)
+        return res.status(401).json({ err: "Unauthorized user" });
 
-    const comment = await Comment.findById(req.params.commentId).exec();
+      const result = validationResult(req);
 
-    // console.log({ comment });
-    // console.log({ commentAuthor: comment.author.toString() });
-    comment.text = req.body.text;
+      if (!result.isEmpty()) {
+        const msgErrors = result.errors.map((err) => err.msg);
+        return res.status(404).json({ err: msgErrors });
+      }
+      // if (!req.body.text)
+      //   return res.status(400).json({ msg: "text was empty!" });
 
-    const commentAuthorId = comment.author.toString();
+      // get updated comment
+      const comment = await Comment.findById(req.params.commentId).exec();
 
-    if (commentAuthorId !== req.userAuth.id)
-      return res
-        .status(400)
-        .json({ message: "You cannot remove other user comment!" });
+      // get author of comment id
+      const commentAuthorId = comment.author.toString();
 
-    await comment.save();
+      // check if author comment is logged user
+      if (commentAuthorId !== req.userAuth.id)
+        return res.status(400).json({ err: "Unauthorized user" });
 
-    return res.status(200).json({ msg: "comment has been updated" });
-  } catch (err) {
-    return res.status(404).json({ msg: "comment doesn't exist!" });
-  }
-};
+      // Update comment text and save in db
+      comment.text = req.body.text;
+      await comment.save();
+
+      return res.status(200).json({ msg: "comment has been updated" });
+    } catch (err) {
+      if (err.name === "CastError")
+        return res.status(404).json({ err: "Post doesn't exist" });
+    }
+  },
+];
 
 exports.comment_delete = async (req, res) => {
   try {
