@@ -38,6 +38,11 @@ exports.post_create = [
     .isLength(POST_BODY_LENGTH)
     .withMessage(`Post body must contain ${POST_BODY_LENGTH} letters!`),
   async (req, res) => {
+    // check authorized user exists
+    if (!req.userAuth)
+      // user is undefined - unauthorized
+      return res.status(401).json({ err: "Unauthorized user" });
+
     const result = validationResult(req);
 
     // validation falied and send errors
@@ -47,13 +52,7 @@ exports.post_create = [
       return res.status(404).json({ err: msgErrors });
     }
 
-    if (!req.userAuth)
-      // user is undefined - unauthorized
-      return res.status(401).json({ err: "Unauthorized user" });
-
-    // if (!req.body.title || !req.body.text)
-    //   return res.status(400).json({ message: "Enter title and text" });
-
+    // Create new post with Schema and save in mongoDB
     const newPost = new Post({
       title: req.body.title,
       text: req.body.text,
@@ -70,47 +69,64 @@ exports.post_create = [
   },
 ];
 
-exports.update_post = async (req, res) => {
-  try {
-    if (!req.userAuth)
-      return res
-        .status(400)
-        .json({ message: "Login or signup to update post" });
+exports.update_post = [
+  body("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Post title field must not be empty!")
+    .isLength(POST_TITLE_LENGTH)
+    .withMessage(`Post title must contain ${POST_TITLE_LENGTH} letters!`),
+  body("text")
+    .trim()
+    .notEmpty()
+    .withMessage("Post body field must not be empty!")
+    .isLength(POST_BODY_LENGTH)
+    .withMessage(`Post body must contain ${POST_BODY_LENGTH} letters!`),
+  async (req, res) => {
+    try {
+      // check authorized user exists
+      if (!req.userAuth)
+        return res.status(401).json({ err: "Unauthorized user" });
 
-    if (!req.body.title || !req.body.text) {
-      return res.status(400).json({ message: "Enter title and text" });
+      // get existing post from db
+      const post = await Post.findOne({ _id: req.params.postId }).exec();
+
+      // check post exists
+      if (!post) return res.status(404).json({ err: "Post doesn't exist" });
+
+      const authorId = post.author._id;
+
+      // Other user post. YOu cannot change utr
+      if (req.userAuth.id.toString() !== authorId.toString())
+        return res.status(401).json({ err: "Unauthorized user" });
+
+      const result = validationResult(req);
+
+      // check is validation correct
+      if (!result.isEmpty()) {
+        const msgErrors = result.errors.map((err) => err.msg);
+        return res.status(404).json({ err: msgErrors });
+      }
+
+      // Update post properties and save them in db
+      post.title = req.body.title;
+      post.text = req.body.text;
+      post.hidden = Boolean(req.body.hidden);
+
+      await post.save();
+
+      return res.status(200).json({ msg: "Post has been updated" });
+    } catch (err) {
+      if (err.name === "CastError")
+        return res.status(404).json({ err: "Post doesn't exist" });
     }
-
-    const post = await Post.findOne({ _id: req.params.postId }).exec();
-
-    if (!post) return res.status(404).json({ message: "post doesn't exist" });
-
-    const authorId = post.author._id;
-
-    if (req.userAuth.id.toString() !== authorId.toString())
-      return res
-        .status(400)
-        .json({ message: "You cannot change other user post" });
-
-    post.title = req.body.title;
-    post.text = req.body.text;
-    post.hidden = Boolean(req.body.hidden);
-
-    await post.save();
-
-    return res.status(200).json({ message: "Post has been updated" });
-  } catch (err) {
-    if (err.name === "CastError")
-      return res.status(404).json({ message: "Invalid post id!", err });
-  }
-};
+  },
+];
 
 exports.post_delete = async (req, res) => {
   try {
     if (!req.userAuth)
-      return res
-        .status(400)
-        .json({ message: "Login or singup to remove post!" });
+      return res.status(401).json({ err: "Unauthorized user" });
 
     const post = await Post.findById(req.params.postId).exec();
 
