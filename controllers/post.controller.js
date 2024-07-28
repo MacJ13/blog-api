@@ -1,5 +1,11 @@
 const Post = require("../models/post.model");
 const Comment = require("../models/comment.model");
+const { body, validationResult } = require("express-validator");
+const {
+  TITLE_POST_LENGTH,
+  POST_TITLE_LENGTH,
+  POST_BODY_LENGTH,
+} = require("../configs/main.config");
 
 // const asyncHandler = require("express-async-handler");
 
@@ -18,24 +24,51 @@ exports.post_index = async (req, res) => {
   return res.status(200).json({ posts: firstFivePosts });
 };
 
-exports.post_create = async (req, res) => {
-  if (!req.userAuth)
-    return res.status(400).json({ message: "Login or singup!" });
+exports.post_create = [
+  body("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Post Title field must not be empty!")
+    .isLength(POST_TITLE_LENGTH)
+    .withMessage(`Post Title must contain ${POST_TITLE_LENGTH} letters!`),
+  body("text")
+    .trim()
+    .notEmpty()
+    .withMessage("Post body must not be empty!")
+    .isLength(POST_BODY_LENGTH)
+    .withMessage(`Post body must contain ${POST_BODY_LENGTH} letters!`),
+  async (req, res) => {
+    const result = validationResult(req);
 
-  if (!req.body.title || !req.body.text)
-    return res.status(400).json({ message: "Enter title and text" });
+    // validation falied and send errors
+    if (!result.isEmpty()) {
+      const msgErrors = result.errors.map((err) => err.msg);
+      // return res.status(400).json({ message: "bad input!!!" })
+      return res.status(404).json({ err: msgErrors });
+    }
 
-  const newPost = new Post({
-    title: req.body.title,
-    text: req.body.text,
-    author: req.userAuth.id,
-    hidden: req.body.hidden,
-  });
+    if (!req.userAuth)
+      // user is undefined - unauthorized
+      return res.status(401).json({ err: "Unauthorized user" });
 
-  await newPost.save();
+    // if (!req.body.title || !req.body.text)
+    //   return res.status(400).json({ message: "Enter title and text" });
 
-  return res.status(200).json({ post: newPost, message: "Post was created" });
-};
+    const newPost = new Post({
+      title: req.body.title,
+      text: req.body.text,
+      author: req.userAuth.id,
+      hidden: req.body.hidden,
+    });
+
+    await newPost.save();
+
+    return res.status(200).json({
+      // post: newPost,
+      msg: "Post was created",
+    });
+  },
+];
 
 exports.update_post = async (req, res) => {
   try {
