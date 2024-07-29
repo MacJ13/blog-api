@@ -89,15 +89,20 @@ exports.comment_edit = [
 
 exports.comment_delete = async (req, res) => {
   try {
+    if (!req.userAuth)
+      return res.status(401).json({ err: "Unauthorized user" });
+
+    // get deleting comment
     const comment = await Comment.findById(req.params.commentId);
 
+    // get author of comment id
     const commentAuthorId = comment.author.toString();
 
+    // check if author comment is logged user
     if (commentAuthorId !== req.userAuth.id)
-      return res
-        .status(400)
-        .json({ message: "You cannot remove other user comment!" });
+      return res.status(400).json({ err: "Unauthorized user" });
 
+    // remove comment from db
     await comment.deleteOne();
 
     return res.status(200).json({ msg: "comment has been deleted" });

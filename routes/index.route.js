@@ -16,7 +16,7 @@ router.get("/refresh", handleRefreshToken);
 
 router.get("/logout", userController.user_logout);
 
-router.post("/signup", userController.signup_user);
+router.post("/register", userController.user_register);
 
 router.post("/login", userController.login_user);
 

@@ -3,6 +3,8 @@ const User = require("../models/user.model");
 const Post = require("../models/post.model");
 const Comment = require("../models/comment.model");
 
+const { body, validationResult } = require("express-validator");
+
 const bcrypt = require("bcrypt");
 
 const dotenv = require("dotenv");
@@ -13,23 +15,55 @@ const {
   ACCESS_TOKEN_EXPIRE,
   COOKIE_SETTINGS,
 } = require("../configs/jwt.config");
-
-// exports.login_user = async(req, res) => {
-//     const
-// }
+const { PASSWORD_LENGTH, NICKNAME_LENGTH } = require("../configs/main.config");
 
 dotenv.config();
 
-exports.signup_user = async (req, res) => {
-  if (!req.body.email || !req.body.nickname || !req.body.password)
-    return res.status(400).json({ message: "enter the email and nickname" });
+exports.user_register = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email must not be empty")
+    .isEmail()
+    .withMessage("Invalid email address")
+    .custom(async (value) => {
+      const existUser = await User.findOne({ email: value }).exec();
 
-  const existUser = await User.findOne({ email: req.body.email }).exec();
+      if (existUser) {
+        throw new Error("Email already in use");
+      }
+    }),
+  body("nickname")
+    .trim()
+    .notEmpty()
+    .withMessage("Nickname must not be empty")
+    .isLength(NICKNAME_LENGTH)
+    .withMessage(`Nickname must contain at least ${NICKNAME_LENGTH} characters`)
+    .custom(async (value) => {
+      const existUser = await User.findOne({ nickname: value }).exec();
 
-  if (existUser) return res.status(400).json({ message: "user exists!" });
+      if (existUser) {
+        throw new Error("Nickname already in use");
+      }
+    }),
+  /// DOKONCZENIE Z POLEM PASSWORD
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Password must not be empty")
+    .isLength(PASSWORD_LENGTH)
+    .withMessage(
+      `Password must contain at least ${PASSWORD_LENGTH} characters`
+    ),
+  async (req, res) => {
+    const result = validationResult(req);
 
-  bcrypt.hash(req.body.password, SALT_ROUNDS, async function (err, hash) {
-    if (err) return res.status(400).json({ err });
+    if (!result.isEmpty()) {
+      const msgErrors = result.errors.map((err) => err.msg);
+      return res.status(400).json({ err: msgErrors });
+    }
+
+    const hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS);
 
     const newUser = new User({
       nickname: req.body.nickname,
@@ -40,9 +74,24 @@ exports.signup_user = async (req, res) => {
 
     await newUser.save();
 
-    return res.status(200).json({ message: "user sign in" });
-  });
-};
+    return res.status(200).json({ msg: "user signed in" });
+
+    // bcrypt.hash(req.body.password, SALT_ROUNDS, async function (err, hash) {
+    //   if (err) return res.status(400).json({ err });
+
+    //   const newUser = new User({
+    //     nickname: req.body.nickname,
+    //     email: req.body.email,
+    //     password: hash,
+    //     favorites: [],
+    //   });
+
+    //   await newUser.save();
+
+    //   return res.status(200).json({ message: "user sign in" });
+    // });
+  },
+];
 
 exports.login_user = async (req, res) => {
   // get cookies from requrest
