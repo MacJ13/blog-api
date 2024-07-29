@@ -56,6 +56,8 @@ exports.user_register = [
       const { confirmPassword } = req.body;
       if (confirmPassword !== value)
         throw new Error("Passwords are not matches");
+
+      return true;
     }),
 
   async (req, res) => {
@@ -207,10 +209,10 @@ exports.user_delete = async (req, res) => {
       Post.find({ author: req.params.userId }, "id"),
     ]);
 
-    if (!user) return res.status(404).json({ msg: "user doesn't exist" });
+    if (!user) return res.status(404).json({ err: "user doesn't exist" });
 
     if (req.userAuth.id !== user._id.toString())
-      return res.status(403).json({ msg: "you cannot remove other user!" });
+      return res.status(403).json({ err: "unauthorized user" });
     // get only all post Ids
     const postIds = posts.map((post) => post.id);
 
@@ -241,9 +243,7 @@ exports.user_detail = async (req, res) => {
     ),
   ]);
 
-  if (!user) return res.status(404).json({ message: "User doesn't exist!" });
+  if (!user) return res.status(404).json({ err: "User doesn't exist!" });
 
-  return res
-    .status(200)
-    .json({ user, posts: postsByUser, message: "You are logged in!" });
+  return res.status(200).json({ user, posts: postsByUser });
 };
