@@ -46,15 +46,18 @@ exports.user_register = [
         throw new Error("Nickname already in use");
       }
     }),
-  /// DOKONCZENIE Z POLEM PASSWORD
   body("password")
     .trim()
     .notEmpty()
     .withMessage("Password must not be empty")
     .isLength(PASSWORD_LENGTH)
-    .withMessage(
-      `Password must contain at least ${PASSWORD_LENGTH} characters`
-    ),
+    .withMessage(`Password must contain at least ${PASSWORD_LENGTH} characters`)
+    .custom((value, { req }) => {
+      const { confirmPassword } = req.body;
+      if (confirmPassword !== value)
+        throw new Error("Passwords are not matches");
+    }),
+
   async (req, res) => {
     const result = validationResult(req);
 
@@ -75,79 +78,89 @@ exports.user_register = [
     await newUser.save();
 
     return res.status(200).json({ msg: "user signed in" });
-
-    // bcrypt.hash(req.body.password, SALT_ROUNDS, async function (err, hash) {
-    //   if (err) return res.status(400).json({ err });
-
-    //   const newUser = new User({
-    //     nickname: req.body.nickname,
-    //     email: req.body.email,
-    //     password: hash,
-    //     favorites: [],
-    //   });
-
-    //   await newUser.save();
-
-    //   return res.status(200).json({ message: "user sign in" });
-    // });
   },
 ];
 
-exports.login_user = async (req, res) => {
-  // get cookies from requrest
-  const cookies = req.cookies;
+exports.user_login = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email must not be empty")
+    .isEmail()
+    .withMessage("Invalid email address"),
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Password must not be empty")
+    .isLength(PASSWORD_LENGTH)
+    .withMessage(
+      `Password must contain at least ${PASSWORD_LENGTH} characters`
+    ),
+  async (req, res) => {
+    // validate request body data (email and password)
+    const result = validationResult(req);
 
-  // find existing user in database
-  const existUser = await User.findOne({ email: req.body.email }).exec();
+    if (!result.isEmpty()) {
+      const msgErrors = result.errors.map((err) => err.msg);
+      return res.status(400).json({ err: msgErrors });
+    }
 
-  if (!existUser) return res.status(404).json({ msg: "User does not exist!" });
+    // get cookies from requrest
+    const cookies = req.cookies;
 
-  // check password correction
-  const match = await bcrypt.compare(req.body.password, existUser.password);
+    // find existing user in database
+    const existUser = await User.findOne({ email: req.body.email }).exec();
 
-  if (!match) return res.status(401).json({ msg: "Incorrect password" });
+    if (!existUser)
+      return res.status(404).json({ err: "User does not exist!" });
 
-  // email, nickname and id of Existing user
-  const userData = {
-    email: existUser.email,
-    nickname: existUser.nickname,
-    id: existUser._id,
-  };
+    // check password correction
+    const match = await bcrypt.compare(req.body.password, existUser.password);
 
-  // create the JSonWbebToken  as string
-  const accessToken = jwt.sign(
-    userData,
-    process.env.JWT_SECRET_KEY,
-    ACCESS_TOKEN_EXPIRE
-  );
+    if (!match) return res.status(400).json({ err: "Incorrect password" });
 
-  const newRefreshToken = jwt.sign(
-    userData,
-    process.env.JWT_REFRESH_KEY,
-    REFRESH_TOKEN_EXPIRE
-  );
+    // email, nickname and id of Existing user
+    const userData = {
+      email: existUser.email,
+      nickname: existUser.nickname,
+      id: existUser._id,
+    };
 
-  const newRefreshTokenArray = !cookies?.jwt
-    ? existUser.refreshToken
-    : existUser.refreshToken.filter((rt) => rt !== cookies.jwt);
+    // create the JSonWbebToken  as string
+    const accessToken = jwt.sign(
+      userData,
+      process.env.JWT_SECRET_KEY,
+      ACCESS_TOKEN_EXPIRE
+    );
 
-  if (cookies?.jwt) res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
+    const newRefreshToken = jwt.sign(
+      userData,
+      process.env.JWT_REFRESH_KEY,
+      REFRESH_TOKEN_EXPIRE
+    );
 
-  // saving Refresh token with current user
-  existUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
+    const newRefreshTokenArray = !cookies?.jwt
+      ? existUser.refreshToken
+      : existUser.refreshToken.filter((rt) => rt !== cookies.jwt);
 
-  // update current user
-  await existUser.save();
+    if (cookies?.jwt) res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
 
-  res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
-  return res.status(200).json({
-    accessToken,
+    // saving Refresh token with current user
+    existUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
 
-    user: userData,
+    // update current user
+    await existUser.save();
 
-    message: "you're logged in!",
-  });
-};
+    res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
+    return res.status(200).json({
+      accessToken,
+
+      user: userData,
+
+      msg: "you're logged in!",
+    });
+  },
+];
 
 exports.user_logout = async (req, res) => {
   // On client, also delete the accessToken
