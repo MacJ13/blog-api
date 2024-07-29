@@ -247,3 +247,50 @@ exports.user_detail = async (req, res) => {
 
   return res.status(200).json({ user, posts: postsByUser });
 };
+
+exports.user_change_password = [
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Password must not be empty")
+    .isLength(PASSWORD_LENGTH)
+    .withMessage(`Password must contain at least ${PASSWORD_LENGTH} characters`)
+    .custom((value, { req }) => {
+      const { confirmPassword } = req.body;
+      if (confirmPassword !== value)
+        throw new Error("Passwords are not matches");
+
+      return true;
+    }),
+
+  async (req, res) => {
+    // validate request body data (email and password)
+    const result = validationResult(req);
+
+    // get validation errors if exists
+    if (!result.isEmpty()) {
+      const msgErrors = result.errors.map((err) => err.msg);
+      return res.status(400).json({ err: msgErrors });
+    }
+
+    if (!req.userAuth)
+      return res.status(401).json({ err: "unauthorized user" });
+
+    // get auth user id
+    const id = req.userAuth.id;
+
+    // get logged user from db
+    const user = await User.findById(id).exec();
+
+    if (!user) return res.status(404).json({ err: "user doesn't exist" });
+
+    // hash new password
+    const hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS);
+
+    // assign new hash password to user and save user in db
+    user.password = hash;
+    await user.save();
+
+    return res.status(200).json({ msg: "password has changed" });
+  },
+];
