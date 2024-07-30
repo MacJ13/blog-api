@@ -15,73 +15,73 @@ const {
   ACCESS_TOKEN_EXPIRE,
   COOKIE_SETTINGS,
 } = require("../configs/jwt.config");
-const { PASSWORD_LENGTH, NICKNAME_LENGTH } = require("../configs/main.config");
+const { PASSWORD_LENGTH } = require("../configs/main.config");
 
 dotenv.config();
 
-exports.user_register = [
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email must not be empty")
-    .isEmail()
-    .withMessage("Invalid email address")
-    .custom(async (value) => {
-      const existUser = await User.findOne({ email: value }).exec();
+// exports.user_register = [
+//   body("email")
+//     .trim()
+//     .notEmpty()
+//     .withMessage("Email must not be empty")
+//     .isEmail()
+//     .withMessage("Invalid email address")
+//     .custom(async (value) => {
+//       const existUser = await User.findOne({ email: value }).exec();
 
-      if (existUser) {
-        throw new Error("Email already in use");
-      }
-    }),
-  body("nickname")
-    .trim()
-    .notEmpty()
-    .withMessage("Nickname must not be empty")
-    .isLength(NICKNAME_LENGTH)
-    .withMessage(`Nickname must contain at least ${NICKNAME_LENGTH} characters`)
-    .custom(async (value) => {
-      const existUser = await User.findOne({ nickname: value }).exec();
+//       if (existUser) {
+//         throw new Error("Email already in use");
+//       }
+//     }),
+//   body("nickname")
+//     .trim()
+//     .notEmpty()
+//     .withMessage("Nickname must not be empty")
+//     .isLength(NICKNAME_LENGTH)
+//     .withMessage(`Nickname must contain at least ${NICKNAME_LENGTH} characters`)
+//     .custom(async (value) => {
+//       const existUser = await User.findOne({ nickname: value }).exec();
 
-      if (existUser) {
-        throw new Error("Nickname already in use");
-      }
-    }),
-  body("password")
-    .trim()
-    .notEmpty()
-    .withMessage("Password must not be empty")
-    .isLength(PASSWORD_LENGTH)
-    .withMessage(`Password must contain at least ${PASSWORD_LENGTH} characters`)
-    .custom((value, { req }) => {
-      const { confirmPassword } = req.body;
-      if (confirmPassword !== value)
-        throw new Error("Passwords are not matches");
+//       if (existUser) {
+//         throw new Error("Nickname already in use");
+//       }
+//     }),
+//   body("password")
+//     .trim()
+//     .notEmpty()
+//     .withMessage("Password must not be empty")
+//     .isLength(PASSWORD_LENGTH)
+//     .withMessage(`Password must contain at least ${PASSWORD_LENGTH} characters`)
+//     .custom((value, { req }) => {
+//       const { confirmPassword } = req.body;
+//       if (confirmPassword !== value)
+//         throw new Error("Passwords are not matches");
 
-      return true;
-    }),
+//       return true;
+//     }),
 
-  async (req, res) => {
-    const result = validationResult(req);
+//   async (req, res) => {
+//     const result = validationResult(req);
 
-    if (!result.isEmpty()) {
-      const msgErrors = result.errors.map((err) => err.msg);
-      return res.status(400).json({ err: msgErrors });
-    }
+//     if (!result.isEmpty()) {
+//       const msgErrors = result.errors.map((err) => err.msg);
+//       return res.status(400).json({ err: msgErrors });
+//     }
 
-    const hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS);
+//     const hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS);
 
-    const newUser = new User({
-      nickname: req.body.nickname,
-      email: req.body.email,
-      password: hash,
-      favorites: [],
-    });
+//     const newUser = new User({
+//       nickname: req.body.nickname,
+//       email: req.body.email,
+//       password: hash,
+//       favorites: [],
+//     });
 
-    await newUser.save();
+//     await newUser.save();
 
-    return res.status(200).json({ msg: "user signed in" });
-  },
-];
+//     return res.status(200).json({ msg: "user signed in" });
+//   },
+// ];
 
 exports.user_login = [
   body("email")
