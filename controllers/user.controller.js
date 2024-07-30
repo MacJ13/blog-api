@@ -200,35 +200,35 @@ exports.user_logout = async (req, res) => {
 
 exports.user_delete = async (req, res) => {
   try {
-    const [
-      user,
-      posts,
-      // comments
-    ] = await Promise.all([
-      User.findById(req.params.userId, "id"),
-      Post.find({ author: req.params.userId }, "id"),
+    console.log(req.userAuth);
+
+    if (!req.userAuth?.id)
+      return res.status(404).json({ err: "unauthorized user" });
+
+    const { id } = req.userAuth;
+
+    const [user, postIds] = await Promise.all([
+      User.findById(id, "id"),
+      // Post.find({ author: id }, "id"),
+      // only id from posts by logged author
+      Post.find({ author: id }, "id").distinct("_id"),
     ]);
 
     if (!user) return res.status(404).json({ err: "user doesn't exist" });
 
-    if (req.userAuth.id !== user._id.toString())
-      return res.status(403).json({ err: "unauthorized user" });
-    // get only all post Ids
-    const postIds = posts.map((post) => post.id);
-
     // remove User and all posts and comments associated with user
     await Promise.all([
-      User.deleteOne({ _id: req.params.userId }),
-      Post.deleteMany({ author: req.params.userId }),
+      User.deleteOne({ _id: id }),
+      Post.deleteMany({ author: id }),
       Comment.deleteMany({ post: { $in: postIds } }),
     ]);
 
-    // remove jwt cookie
+    // // remove jwt cookie
     res.clearCookie("jwt", { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
 
     return res.status(204).json({ msg: "User has been removed!" });
   } catch (err) {
-    res.status(404).json({ msg: "user doesn't exist" });
+    res.status(404).json({ err: "user doesn't exist" });
   }
 };
 
