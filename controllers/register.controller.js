@@ -4,6 +4,7 @@ const { body, validationResult } = require("express-validator");
 
 const { SALT_ROUNDS } = require("../configs/bcrypt.config");
 const { NICKNAME_LENGTH, PASSWORD_LENGTH } = require("../configs/main.config");
+const validateResult = require("../middlewares/validateResult");
 
 exports.user_register = [
   body("email")
@@ -45,14 +46,15 @@ exports.user_register = [
 
       return true;
     }),
+  validateResult,
   async (req, res) => {
     // check validation fields
-    const result = validationResult(req);
+    // const result = validationResult(req);
 
-    if (!result.isEmpty()) {
-      const msgErrors = result.errors.map((err) => err.msg);
-      return res.status(400).json({ err: msgErrors });
-    }
+    // if (!result.isEmpty()) {
+    //   const msgErrors = result.errors.map((err) => err.msg);
+    //   return res.status(400).json({ err: msgErrors });
+    // }
 
     // hash user password
     const hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS);

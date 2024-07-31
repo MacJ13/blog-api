@@ -10,6 +10,7 @@ const {
   COOKIE_SETTINGS,
 } = require("../configs/jwt.config");
 const { PASSWORD_LENGTH } = require("../configs/main.config");
+const validateResult = require("../middlewares/validateResult");
 
 dotenv.config();
 
@@ -28,14 +29,15 @@ exports.user_login = [
     .withMessage(
       `Password must contain at least ${PASSWORD_LENGTH} characters`
     ),
+  validateResult,
   async (req, res) => {
     // validate request body data (email and password)
-    const result = validationResult(req);
+    // const result = validationResult(req);
 
-    if (!result.isEmpty()) {
-      const msgErrors = result.errors.map((err) => err.msg);
-      return res.status(400).json({ err: msgErrors });
-    }
+    // if (!result.isEmpty()) {
+    //   const msgErrors = result.errors.map((err) => err.msg);
+    //   return res.status(400).json({ err: msgErrors });
+    // }
 
     // get cookies from requrest
     const cookies = req.cookies;

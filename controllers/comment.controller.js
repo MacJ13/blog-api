@@ -1,7 +1,8 @@
 const { COMMENT_LENGTH } = require("../configs/main.config");
+const validateResult = require("../middlewares/validateResult");
 const Comment = require("../models/comment.model");
 const Post = require("../models/post.model");
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
 
 exports.comment_add = [
   body("text")
@@ -10,6 +11,7 @@ exports.comment_add = [
     .withMessage("Comment not must be empty!")
     .isLength(COMMENT_LENGTH)
     .withMessage(`Comment must contain at least ${COMMENT_LENGTH} characters`),
+  validateResult,
   async (req, res) => {
     try {
       // check authorized user exists
@@ -21,12 +23,12 @@ exports.comment_add = [
       if (!post) return res.status(404).json({ err: "Post doesn't exist" });
 
       // check is validation correct
-      const result = validationResult(req);
+      // const result = validationResult(req);
 
-      if (!result.isEmpty()) {
-        const msgErrors = result.errors.map((err) => err.msg);
-        return res.status(404).json({ err: msgErrors });
-      }
+      // if (!result.isEmpty()) {
+      //   const msgErrors = result.errors.map((err) => err.msg);
+      //   return res.status(404).json({ err: msgErrors });
+      // }
 
       const newComment = new Comment({
         text: req.body.text,
@@ -51,17 +53,18 @@ exports.comment_edit = [
     .withMessage("Comment not must be empty!")
     .isLength(COMMENT_LENGTH)
     .withMessage(`Comment must contain at least ${COMMENT_LENGTH} characters`),
+  validateResult,
   async (req, res) => {
     try {
       if (!req.userAuth)
         return res.status(401).json({ err: "Unauthorized user" });
 
-      const result = validationResult(req);
+      // const result = validationResult(req);
 
-      if (!result.isEmpty()) {
-        const msgErrors = result.errors.map((err) => err.msg);
-        return res.status(404).json({ err: msgErrors });
-      }
+      // if (!result.isEmpty()) {
+      //   const msgErrors = result.errors.map((err) => err.msg);
+      //   return res.status(404).json({ err: msgErrors });
+      // }
       // if (!req.body.text)
       //   return res.status(400).json({ msg: "text was empty!" });
 
