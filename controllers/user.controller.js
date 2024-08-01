@@ -3,7 +3,7 @@ const User = require("../models/user.model");
 const Post = require("../models/post.model");
 const Comment = require("../models/comment.model");
 
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
 
 const bcrypt = require("bcrypt");
 
@@ -80,15 +80,6 @@ exports.user_change_password = [
     }),
   validateResult,
   async (req, res) => {
-    // validate request body data (email and password)
-    // const result = validationResult(req);
-
-    // // get validation errors if exists
-    // if (!result.isEmpty()) {
-    //   const msgErrors = result.errors.map((err) => err.msg);
-    //   return res.status(400).json({ err: msgErrors });
-    // }
-
     if (!req.userAuth)
       return res.status(401).json({ err: "unauthorized user" });
 

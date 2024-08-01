@@ -1,4 +1,3 @@
-const passport = require("passport");
 const {
   JWT_OPTIONS,
   ACCESS_TOKEN_EXPIRE,
@@ -12,6 +11,8 @@ const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 
 const dotenv = require("dotenv");
+
+dotenv.config();
 
 const jwt_strategy = new JwtStrategy(JWT_OPTIONS, async (payload, done) => {
   console.log("PassportJwt Strategy being processed");
@@ -29,15 +30,13 @@ const jwt_strategy = new JwtStrategy(JWT_OPTIONS, async (payload, done) => {
   }
 });
 
-dotenv.config();
-
 const handleRefreshToken = async (req, res) => {
   // get cookies from request cookies;
   const cookies = req.cookies;
 
   // check if coookies with jwt exists
   if (!cookies?.jwt)
-    return res.status(401).json({ msg: "Unauthorized message!" });
+    return res.status(401).json({ err: "Unauthorized message!" });
 
   // assign cokkies jwt as refresh token
   const refreshToken = cookies.jwt;
@@ -70,7 +69,7 @@ const handleRefreshToken = async (req, res) => {
       }
     );
 
-    return res.status(403).json({ msg: "Forbidden user!" });
+    return res.status(403).json({ err: "Forbidden user!" });
   }
 
   // filter fresh array token to remove current fresh token
@@ -90,7 +89,7 @@ const handleRefreshToken = async (req, res) => {
       }
 
       if (err || foundUser.nickname !== decoded.nickname) {
-        return res.status(403).json({ msg: "Forbidden user!" });
+        return res.status(403).json({ err: "Forbidden user!" });
       }
 
       // Referes token was still valid

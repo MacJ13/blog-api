@@ -59,15 +59,6 @@ exports.comment_edit = [
       if (!req.userAuth)
         return res.status(401).json({ err: "Unauthorized user" });
 
-      // const result = validationResult(req);
-
-      // if (!result.isEmpty()) {
-      //   const msgErrors = result.errors.map((err) => err.msg);
-      //   return res.status(404).json({ err: msgErrors });
-      // }
-      // if (!req.body.text)
-      //   return res.status(400).json({ msg: "text was empty!" });
-
       // get updated comment
       const comment = await Comment.findById(req.params.commentId).exec();
 

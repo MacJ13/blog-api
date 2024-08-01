@@ -1,7 +1,7 @@
 const Post = require("../models/post.model");
 const Comment = require("../models/comment.model");
 
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
 
 const {
   POST_TITLE_LENGTH,
@@ -9,15 +9,6 @@ const {
   POSTS_PER_PAGE,
 } = require("../configs/main.config");
 const validateResult = require("../middlewares/validateResult");
-
-// exports.post_index = async (req, res) => {
-//   const firstFivePosts = await Post.find()
-//     .sort({ timeStamp: 1 })
-//     .limit(5)
-//     .exec();
-
-//   return res.status(200).json({ posts: firstFivePosts });
-// };
 
 exports.post_create = [
   body("title")
@@ -34,13 +25,6 @@ exports.post_create = [
     .withMessage(`Post body must contain ${POST_BODY_LENGTH} letters!`),
   validateResult,
   async (req, res) => {
-    // const result = validationResult(req);
-    // // validation falied and send errors
-    // if (!result.isEmpty()) {
-    //   const msgErrors = result.errors.map((err) => err.msg);
-    //   // return res.status(400).json({ message: "bad input!!!" })
-    //   return res.status(404).json({ err: msgErrors });
-    // }
     // check authorized user exists
     if (!req.userAuth)
       // user is undefined - unauthorized
@@ -80,12 +64,6 @@ exports.update_post = [
   validateResult,
   async (req, res) => {
     try {
-      // // check is validation correct
-      // const result = validationResult(req);
-      // if (!result.isEmpty()) {
-      //   const msgErrors = result.errors.map((err) => err.msg);
-      //   return res.status(404).json({ err: msgErrors });
-      // }
       // check authorized user exists
       if (!req.userAuth)
         return res.status(401).json({ err: "Unauthorized user" });

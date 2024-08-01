@@ -2,7 +2,7 @@ const User = require("../models/user.model");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
 const dotenv = require("dotenv");
 const {
   ACCESS_TOKEN_EXPIRE,
@@ -31,14 +31,6 @@ exports.user_login = [
     ),
   validateResult,
   async (req, res) => {
-    // validate request body data (email and password)
-    // const result = validationResult(req);
-
-    // if (!result.isEmpty()) {
-    //   const msgErrors = result.errors.map((err) => err.msg);
-    //   return res.status(400).json({ err: msgErrors });
-    // }
-
     // get cookies from requrest
     const cookies = req.cookies;
 
