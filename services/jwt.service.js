@@ -8,7 +8,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const jwt_strategy = new JwtStrategy(JWT_OPTIONS, async (payload, done) => {
-  console.log("PassportJwt Strategy being processed");
+  // console.log("PassportJwt Strategy being processed");
   // console.log({ payload, done });
   try {
     const user = await User.findById(payload.id);

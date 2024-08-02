@@ -15,7 +15,7 @@ const indexRouter = require("./routes/index.route");
 
 const apiRouter = require("./routes/api.route");
 
-const { jwt_strategy } = require("./services/passport.jwt.service");
+const { jwt_strategy } = require("./services/jwt.service");
 
 const cookieParser = require("cookie-parser");
 
