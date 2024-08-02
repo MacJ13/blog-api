@@ -6,9 +6,9 @@ const registerController = require("../controllers/register.controller");
 
 const loggerController = require("../controllers/logger.controller");
 
-const { handleRefreshToken } = require("../services/passport.jwt.service");
+const tokenController = require("../controllers/token.controller");
 
-router.get("/refresh", handleRefreshToken);
+router.get("/refresh", tokenController.refresh_token);
 
 router.get("/logout", loggerController.user_logout);
 
