@@ -8,8 +8,6 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const jwt_strategy = new JwtStrategy(JWT_OPTIONS, async (payload, done) => {
-  // console.log("PassportJwt Strategy being processed");
-  // console.log({ payload, done });
   try {
     const user = await User.findById(payload.id);
     // console.log({ user });
@@ -22,8 +20,6 @@ const jwt_strategy = new JwtStrategy(JWT_OPTIONS, async (payload, done) => {
     return done(error);
   }
 });
-
-// move and rename handleLogout to user_logout
 
 module.exports = {
   jwt_strategy,

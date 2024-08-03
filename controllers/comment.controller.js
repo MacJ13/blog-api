@@ -22,14 +22,6 @@ exports.comment_add = [
 
       if (!post) return res.status(404).json({ err: "Post doesn't exist" });
 
-      // check is validation correct
-      // const result = validationResult(req);
-
-      // if (!result.isEmpty()) {
-      //   const msgErrors = result.errors.map((err) => err.msg);
-      //   return res.status(404).json({ err: msgErrors });
-      // }
-
       const newComment = new Comment({
         text: req.body.text,
         post: req.params.postId,

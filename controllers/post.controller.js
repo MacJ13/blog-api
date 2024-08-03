@@ -122,8 +122,6 @@ exports.post_delete = async (req, res) => {
 };
 
 exports.post_detail = async (req, res) => {
-  // const post = await Post.findById(req.params.postId).exec();
-
   const [post, commentsByPost] = await Promise.all([
     Post.findById(req.params.postId, "title text author timeStamp").populate(
       "author",

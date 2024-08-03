@@ -10,9 +10,6 @@ const { PORT } = require("./configs/main.config");
 const connectDB = require("./services/db.service");
 
 const indexRouter = require("./routes/index.route");
-// const userRouter = require("./routes/api/user.route");
-// const postRouter = require("./routes/api/post.route");
-
 const apiRouter = require("./routes/api.route");
 
 const { jwt_strategy } = require("./services/jwt.service");
@@ -26,9 +23,7 @@ passport.use(jwt_strategy);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use("/", indexRouter);
-// app.use("/user", userRouter);
-// app.use("/post", postRouter);
+
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
 
