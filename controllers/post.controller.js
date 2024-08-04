@@ -122,20 +122,25 @@ exports.post_delete = async (req, res) => {
 };
 
 exports.post_detail = async (req, res) => {
-  const [post, commentsByPost] = await Promise.all([
-    Post.findById(req.params.postId, "title text author timeStamp").populate(
-      "author",
-      "nickname"
-    ),
-    Comment.find({ post: req.params.postId }, "text timestamp").populate(
-      "author",
-      "nickname"
-    ),
-  ]);
+  try {
+    const [post, commentsByPost] = await Promise.all([
+      Post.findById(req.params.postId, "title text author timeStamp").populate(
+        "author",
+        "nickname"
+      ),
+      Comment.find({ post: req.params.postId }, "text timestamp").populate(
+        "author",
+        "nickname"
+      ),
+    ]);
 
-  if (!post) return res.status(404).json({ err: "Post doesn't exist" });
+    if (!post) return res.status(404).json({ err: "Post doesn't exist" });
 
-  return res.status(200).json({ post, comments: commentsByPost });
+    return res.status(200).json({ post, comments: commentsByPost });
+  } catch (err) {
+    if (err.name === "CastError")
+      return res.status(404).json({ err: "Post doesn't exist" });
+  }
 };
 
 exports.post_list = async (req, res) => {
