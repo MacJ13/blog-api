@@ -15,6 +15,7 @@ const REFRESH_TOKEN_EXPIRE = { expiresIn: "7d" };
 
 const COOKIE_SETTINGS = {
   httpOnly: true,
+  secure: true,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
