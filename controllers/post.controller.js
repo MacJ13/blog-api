@@ -145,21 +145,20 @@ exports.post_detail = async (req, res) => {
 
 exports.post_list = async (req, res) => {
   // get all posts
+
+  // get current page
+  const page = Number(req.query.page) || 1;
+
+  // skip first n documents depending on current page
+  const skip = (page - 1) * POSTS_PER_PAGE;
+
+  // find posts on db
   const posts = await Post.find({ hidden: false }, "title author timeStamp")
+    .limit(POSTS_PER_PAGE)
+    .skip(skip)
     .sort({ timeStamp: 1 })
     .populate("author", "nickname")
     .exec();
 
-  // create posts per query page
-  const limit = POSTS_PER_PAGE;
-
-  const page = Number(req.query.page) || 1;
-
-  const start = (page - 1) * limit;
-
-  const end = page * limit;
-
-  const slicePosts = posts.slice(start, end);
-
-  return res.status(200).json({ posts: slicePosts, page, limit });
+  return res.status(200).json({ posts, page, limit: POSTS_PER_PAGE });
 };
