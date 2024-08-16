@@ -1,8 +1,28 @@
-const { COMMENT_LENGTH } = require("../configs/main.config");
+const {
+  COMMENT_LENGTH,
+  COMMENTS_PER_PAGE,
+  POSTS_PER_PAGE,
+} = require("../configs/main.config");
 const validateResult = require("../middlewares/validateResult");
 const Comment = require("../models/comment.model");
 const Post = require("../models/post.model");
 const { body } = require("express-validator");
+
+exports.comment_list = async (req, res) => {
+  if (!req.userAuth) return res.status(401).json({ err: "Unauthorized user" });
+
+  // console.log(req.userAuth);
+  const page = Number(req.query.page) || 1;
+  const skip = (page - 1) * POSTS_PER_PAGE;
+
+  const comments = await Comment.find({ author: req.userAuth.id })
+    .limit(COMMENTS_PER_PAGE)
+    .skip(skip)
+    .exec();
+
+  // console.log(comments);
+  return res.status(200).json({ comments });
+};
 
 exports.comment_add = [
   body("text")
