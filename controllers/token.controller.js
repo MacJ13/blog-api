@@ -18,7 +18,7 @@ exports.refresh_token = async (req, res) => {
 
   // check if coookies with jwt exists
   if (!cookies?.jwt)
-    return res.status(401).json({ err: "Unathorized message" });
+    return res.status(401).json({ error: "Unathorized message" });
 
   // assign cookies jwt as refresh token
   const refreshToken = cookies.jwt;
@@ -49,7 +49,7 @@ exports.refresh_token = async (req, res) => {
       }
     );
 
-    return res.status(403).json({ err: "Forbidden user!" });
+    return res.status(403).json({ error: "Forbidden user!" });
   }
 
   // filter fresh array token to remove current fresh token
@@ -69,7 +69,7 @@ exports.refresh_token = async (req, res) => {
       }
 
       if (err || foundUser.nickname !== decoded.nickname) {
-        return res.status(403).json({ err: "Forbidden user!" });
+        return res.status(403).json({ error: "Forbidden user!" });
       }
 
       // referring token is still valid

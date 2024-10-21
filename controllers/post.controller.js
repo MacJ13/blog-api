@@ -28,7 +28,7 @@ exports.post_create = [
     // check authorized user exists
     if (!req.userAuth)
       // user is undefined - unauthorized
-      return res.status(401).json({ err: "Unauthorized user" });
+      return res.status(401).json({ error: "Unauthorized user" });
 
     // Create new post with Schema and save in mongoDB
     const newPost = new Post({
@@ -66,19 +66,19 @@ exports.update_post = [
     try {
       // check authorized user exists
       if (!req.userAuth)
-        return res.status(401).json({ err: "Unauthorized user" });
+        return res.status(401).json({ error: "Unauthorized user" });
 
       // get existing post from db
       const post = await Post.findOne({ _id: req.params.postId }).exec();
 
       // check post exists
-      if (!post) return res.status(404).json({ err: "Post doesn't exist" });
+      if (!post) return res.status(404).json({ error: "Post doesn't exist" });
 
       const authorId = post.author._id;
 
       // Other user post. YOu cannot change utr
       if (req.userAuth.id.toString() !== authorId.toString())
-        return res.status(401).json({ err: "Unauthorized user" });
+        return res.status(401).json({ error: "Unauthorized user" });
 
       // Update post properties and save them in db
       post.title = req.body.title;
@@ -90,7 +90,7 @@ exports.update_post = [
       return res.status(200).json({ msg: "Post has been updated" });
     } catch (err) {
       if (err.name === "CastError")
-        return res.status(404).json({ err: "Post doesn't exist" });
+        return res.status(404).json({ error: "Post doesn't exist" });
     }
   },
 ];
@@ -98,16 +98,16 @@ exports.update_post = [
 exports.post_delete = async (req, res) => {
   try {
     if (!req.userAuth)
-      return res.status(401).json({ err: "Unauthorized user" });
+      return res.status(401).json({ error: "Unauthorized user" });
 
     const post = await Post.findById(req.params.postId, "title").exec();
 
-    if (!post) return res.status(404).json({ err: "post doesn't exist" });
+    if (!post) return res.status(404).json({ error: "post doesn't exist" });
 
     const authorId = post.author._id;
 
     if (req.userAuth.id.toString() !== authorId.toString())
-      return res.status(400).json({ err: "Unauthorized user" });
+      return res.status(400).json({ error: "Unauthorized user" });
 
     await Promise.all([
       post.deleteOne(),
@@ -117,7 +117,7 @@ exports.post_delete = async (req, res) => {
     return res.status(200).json({ message: "Post has been removed!" });
   } catch (err) {
     if (err.name === "CastError")
-      return res.status(404).json({ err: "Post doesn't exist" });
+      return res.status(404).json({ error: "Post doesn't exist" });
   }
 };
 
@@ -134,12 +134,12 @@ exports.post_detail = async (req, res) => {
       ),
     ]);
 
-    if (!post) return res.status(404).json({ err: "Post doesn't exist" });
+    if (!post) return res.status(404).json({ error: "Post doesn't exist" });
 
     return res.status(200).json({ post, comments: commentsByPost });
   } catch (err) {
     if (err.name === "CastError")
-      return res.status(404).json({ err: "Post doesn't exist" });
+      return res.status(404).json({ error: "Post doesn't exist" });
   }
 };
 

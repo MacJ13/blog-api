@@ -6,12 +6,23 @@ module.exports = (req, res, next) => {
   // get validation errors if exists
   // validate request body data
   if (!result.isEmpty()) {
-    const errors = result.errors.map((err) => ({
-      value: err.value,
-      path: err.path,
-      msg: err.msg,
-    }));
-    return res.status(400).json({ err: errors });
+    const errorObject = {};
+
+    result.errors.forEach((err) => {
+      errorObject[err.path] = {
+        msg: err.msg,
+        value: err.value,
+        path: err.path,
+      };
+    });
+
+    // const errors = result.errors.map((err) => ({
+    //   value: err.value,
+    //   path: err.path,
+    //   msg: err.msg,
+    // }));
+
+    return res.status(400).json({ err: errorObject });
   }
 
   next();

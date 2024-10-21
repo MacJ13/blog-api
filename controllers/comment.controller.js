@@ -9,7 +9,8 @@ const Post = require("../models/post.model");
 const { body } = require("express-validator");
 
 exports.comment_list = async (req, res) => {
-  if (!req.userAuth) return res.status(401).json({ err: "Unauthorized user" });
+  if (!req.userAuth)
+    return res.status(401).json({ error: "Unauthorized user" });
 
   // console.log(req.userAuth);
   const page = Number(req.query.page) || 1;
@@ -36,11 +37,11 @@ exports.comment_add = [
     try {
       // check authorized user exists
       if (!req.userAuth)
-        return res.status(401).json({ err: "Unauthorized user" });
+        return res.status(401).json({ error: "Unauthorized user" });
 
       const post = await Post.findById(req.params.postId).exec();
 
-      if (!post) return res.status(404).json({ err: "Post doesn't exist" });
+      if (!post) return res.status(404).json({ error: "Post doesn't exist" });
 
       const newComment = new Comment({
         text: req.body.text,
@@ -53,7 +54,7 @@ exports.comment_add = [
       return res.status(200).json({ message: "Comment has been added" });
     } catch (err) {
       if (err.name === "CastError")
-        return res.status(404).json({ err: "Post doesn't exist" });
+        return res.status(404).json({ error: "Post doesn't exist" });
     }
   },
 ];
@@ -69,7 +70,7 @@ exports.comment_edit = [
   async (req, res) => {
     try {
       if (!req.userAuth)
-        return res.status(401).json({ err: "Unauthorized user" });
+        return res.status(401).json({ error: "Unauthorized user" });
 
       // get updated comment
       const comment = await Comment.findById(req.params.commentId).exec();
@@ -79,7 +80,7 @@ exports.comment_edit = [
 
       // check if author comment is logged user
       if (commentAuthorId !== req.userAuth.id)
-        return res.status(400).json({ err: "Unauthorized user" });
+        return res.status(400).json({ error: "Unauthorized user" });
 
       // Update comment text and save in db
       comment.text = req.body.text;
@@ -88,7 +89,7 @@ exports.comment_edit = [
       return res.status(200).json({ msg: "comment has been updated" });
     } catch (err) {
       if (err.name === "CastError")
-        return res.status(404).json({ err: "Post doesn't exist" });
+        return res.status(404).json({ error: "Post doesn't exist" });
     }
   },
 ];
@@ -96,7 +97,7 @@ exports.comment_edit = [
 exports.comment_delete = async (req, res) => {
   try {
     if (!req.userAuth)
-      return res.status(401).json({ err: "Unauthorized user" });
+      return res.status(401).json({ error: "Unauthorized user" });
 
     // get deleting comment
     const comment = await Comment.findById(req.params.commentId);
@@ -106,7 +107,7 @@ exports.comment_delete = async (req, res) => {
 
     // check if author comment is logged user
     if (commentAuthorId !== req.userAuth.id)
-      return res.status(400).json({ err: "Unauthorized user" });
+      return res.status(400).json({ error: "Unauthorized user" });
 
     // remove comment from db
     await comment.deleteOne();
