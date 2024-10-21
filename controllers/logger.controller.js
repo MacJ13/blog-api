@@ -38,12 +38,12 @@ exports.user_login = [
     const existUser = await User.findOne({ email: req.body.email }).exec();
 
     if (!existUser)
-      return res.status(404).json({ err: "User does not exist!" });
+      return res.status(404).json({ error: "User does not exist!" });
 
     // check password correction
     const match = await bcrypt.compare(req.body.password, existUser.password);
 
-    if (!match) return res.status(400).json({ err: "Incorrect password" });
+    if (!match) return res.status(400).json({ error: "Incorrect password" });
 
     // get email, nickname and id of Existing user
     const userData = {

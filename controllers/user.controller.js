@@ -19,7 +19,7 @@ exports.user_delete = async (req, res) => {
     console.log(req.userAuth);
 
     if (!req.userAuth?.id)
-      return res.status(404).json({ err: "unauthorized user" });
+      return res.status(404).json({ error: "unauthorized user" });
 
     const { id } = req.userAuth;
 
@@ -30,7 +30,7 @@ exports.user_delete = async (req, res) => {
       Post.find({ author: id }, "id").distinct("_id"),
     ]);
 
-    if (!user) return res.status(404).json({ err: "user doesn't exist" });
+    if (!user) return res.status(404).json({ error: "user doesn't exist" });
 
     // remove User and all posts and comments associated with user
     await Promise.all([
@@ -44,7 +44,7 @@ exports.user_delete = async (req, res) => {
 
     return res.status(204).json({ msg: "User has been removed!" });
   } catch (err) {
-    res.status(404).json({ err: "user doesn't exist" });
+    res.status(404).json({ error: "user doesn't exist" });
   }
 };
 
@@ -59,7 +59,7 @@ exports.user_detail = async (req, res) => {
     ),
   ]);
 
-  if (!user) return res.status(404).json({ err: "User doesn't exist!" });
+  if (!user) return res.status(404).json({ error: "User doesn't exist!" });
 
   return res.status(200).json({ user, posts: postsByUser });
 };
@@ -81,7 +81,7 @@ exports.user_change_password = [
   validateResult,
   async (req, res) => {
     if (!req.userAuth)
-      return res.status(401).json({ err: "unauthorized user" });
+      return res.status(401).json({ error: "unauthorized user" });
 
     // get auth user id
     const id = req.userAuth.id;
@@ -89,7 +89,7 @@ exports.user_change_password = [
     // get logged user from db
     const user = await User.findById(id).exec();
 
-    if (!user) return res.status(404).json({ err: "user doesn't exist" });
+    if (!user) return res.status(404).json({ error: "user doesn't exist" });
 
     // hash new password
     const hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS);
