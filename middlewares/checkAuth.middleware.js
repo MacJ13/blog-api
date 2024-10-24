@@ -17,7 +17,7 @@ module.exports = (req, res, next) => {
       if (!authHeader)
         return res
           .status(401)
-          .json({ msg: "Token doesn't exist! Unathorized message!" });
+          .json({ error: "Token doesn't exist! Unathorized message!" });
 
       // extract token from authorization header request
       const token = authHeader.split(" ")[1];
@@ -29,7 +29,7 @@ module.exports = (req, res, next) => {
         // {igonreExpiration: true},
         function (err, decoded) {
           if (err) {
-            return res.status(401).json({ msg: "Unauthorized message!" });
+            return res.status(401).json({ error: "Unauthorized message!" });
           }
           // create request userAuth object
           req.userAuth = decoded;
