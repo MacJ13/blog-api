@@ -17,7 +17,7 @@ exports.user_register = [
       const existUser = await User.findOne({ email: value }).exec();
 
       if (existUser) {
-        throw new Error("Email already in use");
+        throw new Error(`Email (${value}) already in use`);
       }
     }),
   body("nickname")
@@ -30,7 +30,7 @@ exports.user_register = [
       const existUser = await User.findOne({ nickname: value }).exec();
 
       if (existUser) {
-        throw new Error("Nickname already in use");
+        throw new Error(`Nickname (${value}) already in use`);
       }
     }),
   body("password")
