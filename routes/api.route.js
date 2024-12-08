@@ -9,7 +9,15 @@ const commentRouter = require("./comment.route");
 const postsRouter = require("./posts.route");
 const commentsRouter = require("./comments.route");
 
+// const registerController = require("../controllers/register.controller");
+// const loggerController = require("../controllers/logger.controller");
+// const tokenController = require("../controllers/token.controller");
+
+const authenticationRouter = require("./authentication.route");
+
 const checkAuth = require("../middlewares/checkAuth.middleware");
+
+router.use("/", authenticationRouter);
 
 router.use(checkAuth);
 router.use("/user", userRouter);
