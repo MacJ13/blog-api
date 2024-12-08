@@ -22,7 +22,9 @@ module.exports = (req, res, next) => {
     //   msg: err.msg,
     // }));
 
-    return res.status(400).json({ error: errorObject });
+    return res
+      .status(409)
+      .json({ error: errorObject, status: "error", code: 409 });
   }
 
   next();

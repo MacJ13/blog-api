@@ -61,6 +61,11 @@ exports.user_register = [
 
     await newUser.save();
 
-    return res.status(200).json({ msg: "user signed in" });
+    return res.status(201).json({
+      status: "success",
+      code: 201,
+      msg: "user signed in",
+      redirect: "/login",
+    });
   },
 ];
