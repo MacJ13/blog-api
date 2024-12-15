@@ -22,10 +22,16 @@ connectDB();
 
 passport.use(jwt_strategy);
 
+const corsOptions = {
+  origin: "*",
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true, //access-control-allow-credentials:true
+};
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(corsOptions));
 
 // app.use("/", indexRouter);
 app.use("/api", apiRouter);
