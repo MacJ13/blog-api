@@ -34,16 +34,39 @@ exports.user_login = [
     // get cookies from requrest
     const cookies = req.cookies;
 
+    console.log(req);
+
     // find existing user in database
     const existUser = await User.findOne({ email: req.body.email }).exec();
-
+    console.log({ existUser });
     if (!existUser)
-      return res.status(404).json({ error: "User does not exist!" });
+      return res.status(404).json({
+        code: 404,
+        status: "error",
+        error: {
+          email: {
+            msg: `User with ${req.body.email} does not exist!`,
+            value: req.body.email,
+            path: "email",
+          },
+        },
+      });
 
     // check password correction
     const match = await bcrypt.compare(req.body.password, existUser.password);
 
-    if (!match) return res.status(400).json({ error: "Incorrect password" });
+    if (!match)
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        error: {
+          password: {
+            msg: "Incorrect password!",
+            value: req.body.password,
+            path: "password",
+          },
+        },
+      });
 
     // get email, nickname and id of Existing user
     const userData = {
@@ -81,6 +104,8 @@ exports.user_login = [
     // set new refresh token in cookie
     res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
     return res.status(200).json({
+      status: "success",
+      code: 200,
       accessToken,
       user: userData,
       msg: "Login is successful! You're logged in!",
