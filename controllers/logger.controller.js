@@ -107,7 +107,7 @@ exports.user_login = [
       status: "success",
       code: 200,
       accessToken,
-      user: userData,
+      user: { favorites: existUser.favorites, ...userData },
       msg: "Login is successful! You're logged in!",
     });
   },

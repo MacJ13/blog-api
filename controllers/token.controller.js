@@ -100,7 +100,7 @@ exports.refresh_token = async (req, res) => {
       // set refresh token in respond cookie
       res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
 
-      res.json({ accessToken });
+      return res.status(200).json({ accessToken });
     }
   );
 };
