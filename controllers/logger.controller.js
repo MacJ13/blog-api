@@ -115,6 +115,7 @@ exports.user_logout = async (req, res) => {
   // get cookies from request
   const cookies = req.cookies;
 
+  console.log(cookies);
   if (!cookies?.jwt) {
     // The server understood the request but refuses to authorize it.
     // res.statusCode = 403;
@@ -146,11 +147,9 @@ exports.user_logout = async (req, res) => {
   // secure: true - only serves on https
 
   res.clearCookie("jwt", COOKIE_SETTINGS);
-  return res
-    .status(200)
-    .json({
-      msg: "You are succesfully logged out!",
-      status: "success",
-      code: 200,
-    });
+  return res.status(200).json({
+    msg: "You are succesfully logged out!",
+    status: "success",
+    code: 200,
+  });
 };
