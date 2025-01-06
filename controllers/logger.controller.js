@@ -34,8 +34,6 @@ exports.user_login = [
     // get cookies from requrest
     const cookies = req.cookies;
 
-    console.log(req);
-
     // find existing user in database
     const existUser = await User.findOne({ email: req.body.email }).exec();
     console.log({ existUser });
@@ -87,7 +85,6 @@ exports.user_login = [
       process.env.JWT_REFRESH_KEY,
       REFRESH_TOKEN_EXPIRE
     );
-
     // set refreshToken in array
     const newRefreshTokenArray = !cookies?.jwt
       ? existUser.refreshToken
@@ -115,15 +112,16 @@ exports.user_login = [
 
 exports.user_logout = async (req, res) => {
   // On client, also delete the accessToken
-
   // get cookies from request
   const cookies = req.cookies;
 
   if (!cookies?.jwt) {
     // The server understood the request but refuses to authorize it.
-    res.statusCode = 403;
+    // res.statusCode = 403;
     //previosly 204
-    return res.json({ msg: "No content cookie!", status: "error", code: 403 });
+    return res
+      .status(403)
+      .json({ msg: "No content cookie!", status: "error", code: 403 });
   }
 
   const refreshToken = cookies.jwt;
@@ -136,7 +134,9 @@ exports.user_logout = async (req, res) => {
   res.clearCookie("jwt", COOKIE_SETTINGS);
 
   if (!foundUser) {
-    return res.status(204).json({ msg: "No content!" });
+    return res
+      .status(404)
+      .json({ msg: "No content! User not found", status: "error", code: 404 });
   }
 
   // clear array of refreshTokens and save it in DB
@@ -147,6 +147,10 @@ exports.user_logout = async (req, res) => {
 
   res.clearCookie("jwt", COOKIE_SETTINGS);
   return res
-    .status(204)
-    .json({ msg: "User has logged out", status: "success", code: 204 });
+    .status(200)
+    .json({
+      msg: "You are succesfully logged out!",
+      status: "success",
+      code: 200,
+    });
 };
