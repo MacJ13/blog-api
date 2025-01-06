@@ -8,7 +8,7 @@ const tokenController = require("../controllers/token.controller");
 
 router.get("/refresh", tokenController.refresh_token);
 
-router.get("/logout", loggerController.user_logout);
+router.post("/logout", loggerController.user_logout);
 
 router.post("/login", loggerController.user_login);
 
