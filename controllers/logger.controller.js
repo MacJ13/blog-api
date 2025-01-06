@@ -120,8 +120,10 @@ exports.user_logout = async (req, res) => {
   const cookies = req.cookies;
 
   if (!cookies?.jwt) {
-    res.statusCode = 204;
-    return res.json({ msg: "No content cookie!" });
+    // The server understood the request but refuses to authorize it.
+    res.statusCode = 403;
+    //previosly 204
+    return res.json({ msg: "No content cookie!", status: "error", code: 403 });
   }
 
   const refreshToken = cookies.jwt;
@@ -144,5 +146,7 @@ exports.user_logout = async (req, res) => {
   // secure: true - only serves on https
 
   res.clearCookie("jwt", COOKIE_SETTINGS);
-  return res.status(204).json({ msg: "No content! User log out" });
+  return res
+    .status(204)
+    .json({ msg: "User has logged out", status: "success", code: 204 });
 };
