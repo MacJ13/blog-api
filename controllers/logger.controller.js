@@ -36,7 +36,7 @@ exports.user_login = [
 
     // find existing user in database
     const existUser = await User.findOne({ email: req.body.email }).exec();
-    console.log({ existUser });
+    // console.log({ existUser });
     if (!existUser)
       return res.status(404).json({
         code: 404,
