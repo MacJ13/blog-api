@@ -18,6 +18,7 @@ const COOKIE_SETTINGS = {
   //secure: true, // to force https (if you use it)
 
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  signed: true, // if you use the secret with cookieParser
 };
 
 module.exports = {
