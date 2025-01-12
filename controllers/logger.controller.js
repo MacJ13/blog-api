@@ -115,7 +115,7 @@ exports.user_logout = async (req, res) => {
   // get cookies from request
   const cookies = req.cookies;
 
-  console.log(cookies);
+  // console.log(cookies);
   if (!cookies?.jwt) {
     // The server understood the request but refuses to authorize it.
     // res.statusCode = 403;

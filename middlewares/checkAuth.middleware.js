@@ -11,13 +11,18 @@ module.exports = (req, res, next) => {
     { session: false },
     (error, user, info, status) => {
       // get authorization property from request headers
-      const authHeader = req.headers["authorization"];
 
+      const authHeader = req.headers["authorization"];
+      // console.log(req.headers);
+      // console.log(authHeader);
       // check if property authorization exists
       if (!authHeader)
-        return res
-          .status(401)
-          .json({ error: "Token doesn't exist! Unathorized message!" });
+        return res.status(403).json({
+          msg: "Unauthorized action. No token",
+          status: "error",
+          code: 403,
+        });
+      // {error: "Token doesn't exist! Unathorized message!" }
 
       // extract token from authorization header request
       const token = authHeader.split(" ")[1];
@@ -29,7 +34,13 @@ module.exports = (req, res, next) => {
         // {igonreExpiration: true},
         function (err, decoded) {
           if (err) {
-            return res.status(401).json({ error: "Unauthorized message!" });
+            return res.status(401).json({
+              msg: "Unauthorized message.",
+              status: "error",
+              code: 403,
+            });
+
+            // return res.status(401).json({ error: "Unauthorized message!" });
           }
           // create request userAuth object
           req.userAuth = decoded;

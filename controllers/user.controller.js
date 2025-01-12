@@ -19,7 +19,9 @@ exports.user_delete = async (req, res) => {
     console.log(req.userAuth);
 
     if (!req.userAuth?.id)
-      return res.status(404).json({ error: "unauthorized user" });
+      return res
+        .status(403)
+        .json({ msg: "unauthorized user", status: "error", code: 403 });
 
     const { id } = req.userAuth;
 
@@ -30,7 +32,10 @@ exports.user_delete = async (req, res) => {
       Post.find({ author: id }, "id").distinct("_id"),
     ]);
 
-    if (!user) return res.status(404).json({ error: "user doesn't exist" });
+    if (!user)
+      return res
+        .status(404)
+        .json({ msg: "user doesn't exist", status: "error", code: 403 });
 
     // remove User and all posts and comments associated with user
     await Promise.all([
@@ -42,9 +47,13 @@ exports.user_delete = async (req, res) => {
     // // remove jwt cookie
     res.clearCookie("jwt", { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
 
-    return res.status(204).json({ msg: "User has been removed!" });
+    return res
+      .status(200)
+      .json({ msg: "user has been  removed", status: "success", code: 200 });
   } catch (err) {
-    res.status(404).json({ error: "user doesn't exist" });
+    res
+      .status(500)
+      .json({ msg: "internal server error", status: "error", code: 500 });
   }
 };
 

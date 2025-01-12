@@ -35,12 +35,6 @@ app.use(cors(corsOptions));
 
 // app.use("/", indexRouter);
 
-app.use((req, res, next) => {
-  console.log("Headers:", req.headers);
-  console.log("Cookies:", req.cookies);
-  next();
-});
-
 app.use("/api", apiRouter);
 
 // catch 404 and forward to error handler
