@@ -35,7 +35,7 @@ exports.user_delete = async (req, res) => {
     if (!user)
       return res
         .status(404)
-        .json({ msg: "user doesn't exist", status: "error", code: 403 });
+        .json({ msg: "user doesn't exist", status: "error", code: 404 });
 
     // remove User and all posts and comments associated with user
     await Promise.all([
@@ -90,7 +90,9 @@ exports.user_change_password = [
   validateResult,
   async (req, res) => {
     if (!req.userAuth)
-      return res.status(401).json({ error: "unauthorized user" });
+      return res
+        .status(403)
+        .json({ msg: "unauthorized user", status: "error", code: 403 });
 
     // get auth user id
     const id = req.userAuth.id;
@@ -98,7 +100,28 @@ exports.user_change_password = [
     // get logged user from db
     const user = await User.findById(id).exec();
 
-    if (!user) return res.status(404).json({ error: "user doesn't exist" });
+    if (!user)
+      return res
+        .status(404)
+        .json({ msg: "user doesn't exist", status: "error", code: 404 });
+
+    // compare passwords
+    const match = await bcrypt.compare(req.body.password, user.password);
+
+    if (match)
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        error: {
+          password: {
+            msg: "the same password as old one",
+            value: "",
+            path: "password",
+          },
+        },
+      });
+
+    //   }
 
     // hash new password
     const hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS);
@@ -107,6 +130,10 @@ exports.user_change_password = [
     user.password = hash;
     await user.save();
 
-    return res.status(200).json({ msg: "password has changed" });
+    return res.status(200).json({
+      msg: "password successfully has changed",
+      status: "success",
+      code: 200,
+    });
   },
 ];
