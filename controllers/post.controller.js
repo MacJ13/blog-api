@@ -17,23 +17,26 @@ exports.post_create = [
     .withMessage("Post Title field must not be empty!")
     .isLength(POST_TITLE_LENGTH)
     .withMessage(`Post Title must contain ${POST_TITLE_LENGTH} letters!`),
-  body("text")
+  body("content")
     .trim()
     .notEmpty()
     .withMessage("Post body must not be empty!")
     .isLength(POST_BODY_LENGTH)
-    .withMessage(`Post body must contain ${POST_BODY_LENGTH} letters!`),
+    .withMessage(`Post body must contain ${POST_BODY_LENGTH} letters!`)
+    .escape(),
   validateResult,
   async (req, res) => {
     // check authorized user exists
     if (!req.userAuth)
       // user is undefined - unauthorized
-      return res.status(401).json({ error: "Unauthorized user" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized user", status: "error", code: 401 });
 
     // Create new post with Schema and save in mongoDB
     const newPost = new Post({
       title: req.body.title,
-      text: req.body.text,
+      content: req.body.content,
       author: req.userAuth.id,
       hidden: req.body.hidden,
     });
@@ -42,7 +45,9 @@ exports.post_create = [
 
     return res.status(200).json({
       // post: newPost,
-      msg: "Post was created",
+      msg: "Post was created successfully",
+      status: "success",
+      code: 201,
     });
   },
 ];
@@ -54,7 +59,7 @@ exports.update_post = [
     .withMessage("Post title field must not be empty!")
     .isLength(POST_TITLE_LENGTH)
     .withMessage(`Post title must contain ${POST_TITLE_LENGTH} letters!`),
-  body("text")
+  body("content")
     .trim()
     .notEmpty()
     .withMessage("Post body field must not be empty!")
@@ -82,7 +87,7 @@ exports.update_post = [
 
       // Update post properties and save them in db
       post.title = req.body.title;
-      post.text = req.body.text;
+      post.content = req.body.content;
       post.hidden = Boolean(req.body.hidden);
 
       await post.save();
@@ -124,10 +129,10 @@ exports.post_delete = async (req, res) => {
 exports.post_detail = async (req, res) => {
   try {
     const [post, commentsByPost] = await Promise.all([
-      Post.findById(req.params.postId, "title text author timeStamp").populate(
-        "author",
-        "nickname"
-      ),
+      Post.findById(
+        req.params.postId,
+        "title content author timeStamp"
+      ).populate("author", "nickname"),
       Comment.find({ post: req.params.postId }, "text timestamp").populate(
         "author",
         "nickname"
@@ -159,6 +164,8 @@ exports.post_list = async (req, res) => {
     .sort({ timeStamp: 1 })
     .populate("author", "nickname")
     .exec();
+
+  console.log(posts);
 
   return res.status(200).json({ posts, page, limit: POSTS_PER_PAGE });
 };
