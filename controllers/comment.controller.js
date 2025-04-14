@@ -26,7 +26,7 @@ exports.comment_list = async (req, res) => {
 };
 
 exports.comment_add = [
-  body("text")
+  body("comment")
     .trim()
     .notEmpty()
     .withMessage("Comment not must be empty!")
@@ -44,17 +44,21 @@ exports.comment_add = [
       if (!post) return res.status(404).json({ error: "Post doesn't exist" });
 
       const newComment = new Comment({
-        text: req.body.text,
+        comment: req.body.comment,
         post: req.params.postId,
         author: req.userAuth.id,
       });
 
       await newComment.save();
 
-      return res.status(200).json({ message: "Comment has been added" });
+      return res
+        .status(201)
+        .json({ msg: "Comment has been added", status: "success", code: 201 });
     } catch (err) {
       if (err.name === "CastError")
-        return res.status(404).json({ error: "Post doesn't exist" });
+        return res
+          .status(404)
+          .json({ status: "error", code: 403, error: "Post doesn't exist" });
     }
   },
 ];
