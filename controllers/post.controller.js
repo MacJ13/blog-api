@@ -133,10 +133,9 @@ exports.post_detail = async (req, res) => {
         req.params.postId,
         "title content author timeStamp"
       ).populate("author", "nickname"),
-      Comment.find({ post: req.params.postId }, "text timestamp").populate(
-        "author",
-        "nickname"
-      ),
+      Comment.find({ post: req.params.postId }, "comment timestamp")
+        .populate("author", "nickname")
+        .sort({ timestamp: -1 }),
     ]);
 
     if (!post) return res.status(404).json({ error: "Post doesn't exist" });
@@ -161,11 +160,11 @@ exports.post_list = async (req, res) => {
   const posts = await Post.find({ hidden: false }, "title author timeStamp")
     .limit(POSTS_PER_PAGE)
     .skip(skip)
-    .sort({ timeStamp: 1 })
+    .sort({ timeStamp: -1 })
     .populate("author", "nickname")
     .exec();
 
-  console.log(posts);
+  // console.log(posts);
 
   return res.status(200).json({ posts, page, limit: POSTS_PER_PAGE });
 };
