@@ -18,7 +18,9 @@ exports.refresh_token = async (req, res) => {
 
   // check if coookies with jwt exists
   if (!cookies?.jwt)
-    return res.status(401).json({ error: "Unathorized message" });
+    return res
+      .status(401)
+      .json({ error: "unauthorized message", status: "error", code: 401 });
 
   // assign cookies jwt as refresh token
   const refreshToken = cookies.jwt;
@@ -34,7 +36,10 @@ exports.refresh_token = async (req, res) => {
       refreshToken,
       process.env.JWT_REFRESH_KEY,
       async (err, decoded) => {
-        if (err) return res.status(403).json({ msg: "Forbidden user!" });
+        if (err)
+          return res
+            .status(403)
+            .json({ error: "forbidden user", status: "error", code: 403 });
 
         const { id } = decoded;
 
@@ -49,7 +54,9 @@ exports.refresh_token = async (req, res) => {
       }
     );
 
-    return res.status(403).json({ error: "Forbidden user!" });
+    return res
+      .status(403)
+      .json({ error: "forbidden user", status: "error", code: 403 });
   }
 
   // filter fresh array token to remove current fresh token
@@ -69,7 +76,9 @@ exports.refresh_token = async (req, res) => {
       }
 
       if (err || foundUser.nickname !== decoded.nickname) {
-        return res.status(403).json({ error: "Forbidden user!" });
+        return res
+          .status(403)
+          .json({ error: "forbidden user", status: "error", code: 403 });
       }
 
       // referring token is still valid
@@ -100,7 +109,9 @@ exports.refresh_token = async (req, res) => {
       // set refresh token in respond cookie
       res.cookie("jwt", newRefreshToken, COOKIE_SETTINGS);
 
-      return res.status(200).json({ accessToken });
+      return res
+        .status(200)
+        .json({ status: "success", code: 200, accessToken });
     }
   );
 };

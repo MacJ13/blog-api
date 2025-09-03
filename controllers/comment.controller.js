@@ -10,19 +10,24 @@ const { body } = require("express-validator");
 
 exports.comment_list = async (req, res) => {
   if (!req.userAuth)
-    return res.status(401).json({ error: "Unauthorized user" });
+    return res
+      .status(401)
+      .json({ msg: "unauthorized user", status: "error", code: 401 });
 
   // console.log(req.userAuth);
   const page = Number(req.query.page) || 1;
-  const skip = (page - 1) * POSTS_PER_PAGE;
+  // const skip = (page - 1) * POSTS_PER_PAGE;
 
   const comments = await Comment.find({ author: req.userAuth.id })
-    .limit(COMMENTS_PER_PAGE)
-    .skip(skip)
+    .populate("post", "title author")
+    .populate("post.author", "nickname")
+    // .populate("author", "nickname")
+    // .limit(COMMENTS_PER_PAGE)
+    // .skip(skip)
     .exec();
 
   // console.log(comments);
-  return res.status(200).json({ comments });
+  return res.status(200).json({ comments, status: "success", code: 200 });
 };
 
 exports.comment_add = [
@@ -37,11 +42,16 @@ exports.comment_add = [
     try {
       // check authorized user exists
       if (!req.userAuth)
-        return res.status(401).json({ error: "Unauthorized user" });
+        return res
+          .status(401)
+          .json({ error: "unathorized user", status: "error", code: 401 });
 
       const post = await Post.findById(req.params.postId).exec();
 
-      if (!post) return res.status(404).json({ error: "Post doesn't exist" });
+      if (!post)
+        return res
+          .status(404)
+          .json({ error: "unathorized user", status: "error", code: 401 });
 
       const newComment = new Comment({
         comment: req.body.comment,
@@ -64,7 +74,7 @@ exports.comment_add = [
 ];
 
 exports.comment_edit = [
-  body("text")
+  body("comment")
     .trim()
     .notEmpty()
     .withMessage("Comment not must be empty!")
@@ -74,26 +84,32 @@ exports.comment_edit = [
   async (req, res) => {
     try {
       if (!req.userAuth)
-        return res.status(401).json({ error: "Unauthorized user" });
+        return res
+          .status(401)
+          .json({ error: "unathorized user", status: "error", code: 401 });
 
       // get updated comment
       const comment = await Comment.findById(req.params.commentId).exec();
-
+      console.log(req.body.comment);
       // get author of comment id
       const commentAuthorId = comment.author.toString();
 
       // check if author comment is logged user
       if (commentAuthorId !== req.userAuth.id)
-        return res.status(400).json({ error: "Unauthorized user" });
+        return res
+          .status(400)
+          .json({ error: "unathorized user", status: "error", code: 400 });
 
       // Update comment text and save in db
-      comment.text = req.body.text;
+      comment.comment = req.body.comment;
       await comment.save();
 
-      return res.status(200).json({ msg: "comment has been updated" });
+      return res
+        .status(200)
+        .json({ msg: "Comment has been edited", status: "success", code: 200 });
     } catch (err) {
       if (err.name === "CastError")
-        return res.status(404).json({ error: "Post doesn't exist" });
+        return res.status(404).json({ error: "Comment doesn't exist" });
     }
   },
 ];
@@ -101,7 +117,9 @@ exports.comment_edit = [
 exports.comment_delete = async (req, res) => {
   try {
     if (!req.userAuth)
-      return res.status(401).json({ error: "Unauthorized user" });
+      return res
+        .status(401)
+        .json({ error: "unathorized user", status: "error", code: 401 });
 
     // get deleting comment
     const comment = await Comment.findById(req.params.commentId);
@@ -111,13 +129,18 @@ exports.comment_delete = async (req, res) => {
 
     // check if author comment is logged user
     if (commentAuthorId !== req.userAuth.id)
-      return res.status(400).json({ error: "Unauthorized user" });
+      return res
+        .status(400)
+        .json({ error: "unathorized user", status: "error", code: 400 });
 
     // remove comment from db
     await comment.deleteOne();
 
-    return res.status(200).json({ msg: "comment has been deleted" });
+    return res
+      .status(200)
+      .json({ msg: "Comment has been removed", status: "success", code: 200 });
   } catch (err) {
-    return res.status(404).json({ msg: "comment doesn't exist!" });
+    if (err.name === "CastError")
+      return res.status(404).json({ error: "Post doesn't exist" });
   }
 };

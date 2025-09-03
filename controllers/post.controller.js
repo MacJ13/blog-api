@@ -71,19 +71,26 @@ exports.update_post = [
     try {
       // check authorized user exists
       if (!req.userAuth)
-        return res.status(401).json({ error: "Unauthorized user" });
+        return res
+          .status(401)
+          .json({ error: "unathorized user", status: "error", code: 401 });
 
       // get existing post from db
       const post = await Post.findOne({ _id: req.params.postId }).exec();
 
       // check post exists
-      if (!post) return res.status(404).json({ error: "Post doesn't exist" });
+      if (!post)
+        return res
+          .status(404)
+          .json({ msg: "post doesn't exist", status: "error", code: 404 });
 
       const authorId = post.author._id;
 
       // Other user post. YOu cannot change utr
       if (req.userAuth.id.toString() !== authorId.toString())
-        return res.status(401).json({ error: "Unauthorized user" });
+        return res
+          .status(401)
+          .json({ error: "unathorized user", status: "error", code: 401 });
 
       // Update post properties and save them in db
       post.title = req.body.title;
@@ -92,47 +99,65 @@ exports.update_post = [
 
       await post.save();
 
-      return res.status(200).json({ msg: "Post has been updated" });
+      return res
+        .status(200)
+        .json({ msg: "Post has been updated!", status: "success", code: 200 });
     } catch (err) {
       if (err.name === "CastError")
-        return res.status(404).json({ error: "Post doesn't exist" });
+        return res
+          .status(404)
+          .json({ msg: "post doesn't exist", status: "error", code: 404 });
     }
+    return res
+      .status(500)
+      .json({ msg: "internal server error", status: "error", code: 500 });
   },
 ];
 
 exports.post_delete = async (req, res) => {
   try {
     if (!req.userAuth)
-      return res.status(401).json({ error: "Unauthorized user" });
+      return res
+        .status(401)
+        .json({ msg: "unauthorized user", status: "error", code: 403 });
 
-    const post = await Post.findById(req.params.postId, "title").exec();
+    const post = await Post.findById(req.params.postId, "title author").exec();
 
-    if (!post) return res.status(404).json({ error: "post doesn't exist" });
+    if (!post)
+      return res
+        .status(404)
+        .json({ error: "Post doesn't exist", code: 404, status: "error" });
 
     const authorId = post.author._id;
 
     if (req.userAuth.id.toString() !== authorId.toString())
-      return res.status(400).json({ error: "Unauthorized user" });
+      return res
+        .status(400)
+        .json({ msg: "unauthorized user", status: "error", code: 403 });
 
     await Promise.all([
       post.deleteOne(),
       Comment.deleteMany({ post: req.params.postId }),
     ]);
-
-    return res.status(200).json({ message: "Post has been removed!" });
+    return res
+      .status(200)
+      .json({ msg: "Post has been removed!", status: "success", code: 200 });
   } catch (err) {
     if (err.name === "CastError")
-      return res.status(404).json({ error: "Post doesn't exist" });
+      return res
+        .status(404)
+        .json({ error: "Post doesn't exist", code: 404, status: "error" });
+
+    return res
+      .status(500)
+      .json({ msg: "internal server error", status: "error", code: 500 });
   }
 };
 
 exports.post_detail = async (req, res) => {
   try {
     const [post, commentsByPost] = await Promise.all([
-      Post.findById(
-        req.params.postId,
-        "title content author timeStamp"
-      ).populate("author", "nickname"),
+      Post.findById(req.params.postId).populate("author", "nickname"),
       Comment.find({ post: req.params.postId }, "comment timestamp")
         .populate("author", "nickname")
         .sort({ timestamp: -1 }),
