@@ -9,16 +9,16 @@ const JWT_OPTIONS = {
   secretOrKey: secretKey,
 };
 
-const ACCESS_TOKEN_EXPIRE = { expiresIn: "1h" };
+const ACCESS_TOKEN_EXPIRE = { expiresIn: "15m" };
 
 const REFRESH_TOKEN_EXPIRE = { expiresIn: "7d" };
 
 const COOKIE_SETTINGS = {
   httpOnly: true,
   secure: true, // to force https (if you use it)
-
-  maxAge: 7 * 24 * 60 * 60 * 1000,
   sameSite: "none",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "/",
 };
 
 module.exports = {
