@@ -122,3 +122,70 @@ exports.refresh_token = async (req, res) => {
     }
   );
 };
+
+exports.renew_user_token = async (req, res, next) => {
+  // get refresh token from jwt
+  const refreshToken = req.cookies.jwt;
+
+  //if token doesn't exist send 403
+  if (!refreshToken) {
+    return res
+      .status(403)
+      .json({ msg: "unauthorized user", status: "error", code: 403 });
+  }
+
+  // verify is token valid
+  jwt.verify(
+    refreshToken,
+    process.env.JWT_REFRESH_KEY,
+    //if token expire send 403
+    async (err, decoded) => {
+      if (err)
+        return res
+          .status(403)
+          .json({ error: "forbidden user", status: "error", code: 403 });
+
+      // assign user data from decoded token
+      req.userAuth = decoded;
+    }
+  );
+
+  // get user from db by refresh token
+  const user = await User.findOne({
+    refreshToken: { $in: [refreshToken] },
+  })
+    .lean()
+    .exec();
+
+  // check if user exists
+  if (!user) {
+    return res.status(404).json({
+      msg: "user not found. token is invalid",
+      status: "error",
+      code: 404,
+    });
+  }
+  // get user data to add to repones
+  const existUser = {
+    email: user.email,
+    nickname: user.nickname,
+    id: user._id,
+    favorites: user.favorites,
+  };
+
+  // create accessToken
+  const accessToken = jwt.sign(
+    existUser,
+    process.env.JWT_SECRET_KEY,
+    ACCESS_TOKEN_EXPIRE
+  );
+
+  // console.log({ accessToken });
+
+  return res.status(200).json({
+    status: "success",
+    code: 200,
+    user: existUser,
+    accessToken,
+  });
+};

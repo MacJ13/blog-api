@@ -8,6 +8,8 @@ const tokenController = require("../controllers/token.controller");
 
 router.get("/refresh", tokenController.refresh_token);
 
+router.get("/exist-token", tokenController.renew_user_token);
+
 router.post("/logout", loggerController.user_logout);
 
 router.post("/login", loggerController.user_login);
