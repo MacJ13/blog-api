@@ -183,6 +183,7 @@ exports.renew_user_token = async (req, res, next) => {
   // console.log({ accessToken });
 
   return res.status(200).json({
+    msg: "Renew login is successful! You're again logged in",
     status: "success",
     code: 200,
     user: existUser,
