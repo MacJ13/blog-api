@@ -7,6 +7,8 @@ router.post("/create", postController.post_create);
 
 router.post("/:postId/comment", commentController.comment_add);
 
+router.get("/:postId/comments", commentController.comment_list_by_post);
+
 router.get("/:postId", postController.post_detail);
 
 router.put("/:postId", postController.update_post);

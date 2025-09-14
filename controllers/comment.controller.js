@@ -21,6 +21,7 @@ exports.comment_list = async (req, res) => {
   const comments = await Comment.find({ author: req.userAuth.id })
     .populate("post", "title author")
     .populate("post.author", "nickname")
+    .sort({ timestamp: -1 })
     // .populate("author", "nickname")
     // .limit(COMMENTS_PER_PAGE)
     // .skip(skip)
@@ -28,6 +29,28 @@ exports.comment_list = async (req, res) => {
 
   // console.log(comments);
   return res.status(200).json({ comments, status: "success", code: 200 });
+};
+
+exports.comment_list_by_post = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+
+    const skip = (page - 1) * POSTS_PER_PAGE;
+
+    const commentsByPost = await Comment.find(
+      { post: req.params.postId },
+      "comment timestamp"
+    )
+      // .skip(skip)
+      .populate("author", "nickname")
+      .sort({ timestamp: -1 })
+      .exec();
+
+    if (!commentsByPost)
+      return res.status(404).json({ error: "Post doesn't exist" });
+    // console.log({ page, skip, commentsByPostLength: commentsLength });
+    return res.status(200).json({ comments: commentsByPost });
+  } catch (err) {}
 };
 
 exports.comment_add = [
@@ -61,9 +84,14 @@ exports.comment_add = [
 
       await newComment.save();
 
-      return res
-        .status(201)
-        .json({ msg: "Comment has been added", status: "success", code: 201 });
+      await newComment.populate("author", "nickname _id");
+
+      return res.status(201).json({
+        msg: "Comment has been added",
+        status: "success",
+        code: 201,
+        comment: newComment,
+      });
     } catch (err) {
       if (err.name === "CastError")
         return res
@@ -89,10 +117,12 @@ exports.comment_edit = [
           .json({ error: "unathorized user", status: "error", code: 401 });
 
       // get updated comment
-      const comment = await Comment.findById(req.params.commentId).exec();
-      console.log(req.body.comment);
+      const comment = await Comment.findById(req.params.commentId)
+        .populate("author", "nickname _id")
+        .exec();
       // get author of comment id
-      const commentAuthorId = comment.author.toString();
+      const commentAuthorId = comment.author._id.toString();
+      // console.log({ commentAuthorId, userId: req.userAuth.id });
 
       // check if author comment is logged user
       if (commentAuthorId !== req.userAuth.id)
@@ -104,9 +134,12 @@ exports.comment_edit = [
       comment.comment = req.body.comment;
       await comment.save();
 
-      return res
-        .status(200)
-        .json({ msg: "Comment has been edited", status: "success", code: 200 });
+      return res.status(200).json({
+        msg: "Comment has been edited",
+        status: "success",
+        code: 200,
+        comment,
+      });
     } catch (err) {
       if (err.name === "CastError")
         return res.status(404).json({ error: "Comment doesn't exist" });
