@@ -16,19 +16,38 @@ exports.comment_list = async (req, res) => {
 
   // console.log(req.userAuth);
   const page = Number(req.query.page) || 1;
-  // const skip = (page - 1) * POSTS_PER_PAGE;
+  const skip = (page - 1) * COMMENTS_PER_PAGE;
 
-  const comments = await Comment.find({ author: req.userAuth.id })
-    .populate("post", "title author")
-    .populate("post.author", "nickname")
-    .sort({ timestamp: -1 })
-    // .populate("author", "nickname")
-    // .limit(COMMENTS_PER_PAGE)
-    // .skip(skip)
-    .exec();
+  // const comments = await Comment.find({ author: req.userAuth.id })
+  //   .populate("post", "title author")
+  //   .populate("post.author", "nickname")
+  //   .sort({ timestamp: -1 })
+  //   // .populate("author", "nickname")
+  //   // .limit(COMMENTS_PER_PAGE)
+  //   // .skip(skip)
+  //   .exec();
+
+  const [comments, totalComments] = await Promise.all([
+    await Comment.find({ author: req.userAuth.id })
+      .populate("post", "title author")
+      .populate("post.author", "nickname")
+      .sort({ timestamp: -1 })
+      .populate("author", "nickname")
+      .limit(COMMENTS_PER_PAGE)
+      .skip(skip)
+      .exec(),
+    await Comment.countDocuments({ author: req.userAuth.id }).exec(),
+  ]);
 
   // console.log(comments);
-  return res.status(200).json({ comments, status: "success", code: 200 });
+  return res.status(200).json({
+    comments,
+    totalComments,
+    pageNumber: page,
+    commentsPerPage: COMMENTS_PER_PAGE,
+    status: "success",
+    code: 200,
+  });
 };
 
 exports.comment_list_by_post = async (req, res) => {

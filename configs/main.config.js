@@ -8,7 +8,7 @@ const POST_BODY_LENGTH = 8;
 
 const POSTS_PER_PAGE = 12;
 
-const COMMENTS_PER_PAGE = 20;
+const COMMENTS_PER_PAGE = 10;
 
 const COMMENT_LENGTH = 3;
 
