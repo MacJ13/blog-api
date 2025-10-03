@@ -179,7 +179,10 @@ exports.post_list = async (req, res) => {
     const page = Number(req.query.page) || 1;
 
     // get posts
-    const posts = await postService.getPostsByQuery(req.query, page);
+    const [posts, totalPosts] = await postService.getPostsByQuery(
+      req.query,
+      page
+    );
 
     if (!posts) {
       return res.status(404).json({
@@ -189,7 +192,12 @@ exports.post_list = async (req, res) => {
       });
     }
 
-    return res.status(200).json({ posts, page, limit: POSTS_PER_PAGE });
+    return res.status(200).json({
+      posts,
+      pageNumber: page,
+      postsPerPage: POSTS_PER_PAGE,
+      totalPosts,
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -197,23 +205,33 @@ exports.post_list = async (req, res) => {
 };
 
 exports.logged_user_post_list = async (req, res) => {
-  console.log(req.userAuth);
-
   const page = Number(req.query.page) || 1;
 
   const skip = (page - 1) * POSTS_PER_PAGE;
 
   try {
     const { id } = req.userAuth;
-    const userPosts = await Post.find({ author: id }, "title timeStamp")
-      .limit(POSTS_PER_PAGE)
-      .skip(skip)
-      .sort({ timeStamp: -1 })
-      .exec();
 
-    return res
-      .status(200)
-      .json({ posts: userPosts, page, limit: POSTS_PER_PAGE });
+    const [userPosts, totalUserPosts] = await Promise.all([
+      await Post.find({ author: id }, "title timeStamp")
+        .limit(POSTS_PER_PAGE)
+        .skip(skip)
+        .sort({ timeStamp: -1 })
+        .exec(),
+      await Post.countDocuments({ author: id }),
+    ]);
+    // const userPosts = await Post.find({ author: id }, "title timeStamp")
+    //   .limit(POSTS_PER_PAGE)
+    //   .skip(skip)
+    //   .sort({ timeStamp: -1 })
+    //   .exec();
+
+    return res.status(200).json({
+      posts: userPosts,
+      pageNumber: page,
+      postsPerPage: POSTS_PER_PAGE,
+      totalPosts: totalUserPosts,
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal server error" });

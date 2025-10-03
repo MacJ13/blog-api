@@ -18,7 +18,9 @@ const getPostsByQuery = async (query, page) => {
     // );
 
     if (!user) {
-      return null;
+      const noUserPosts = [];
+
+      return [noUserPosts, noUserPosts.length];
     }
     filter.author = user._id;
   }
@@ -27,12 +29,17 @@ const getPostsByQuery = async (query, page) => {
     filter.title = { $regex: `\\b${query.post}`, $options: "i" };
   }
 
-  return await Post.find(filter, "title author timeStamp")
-    .limit(POSTS_PER_PAGE)
-    .skip(skip)
-    .sort({ timeStamp: -1 })
-    .populate("author", "nickname")
-    .exec();
+  // const totalPosts = console.log(totalPosts);
+
+  return await Promise.all([
+    await Post.find(filter, "title author timeStamp")
+      .limit(POSTS_PER_PAGE)
+      .skip(skip)
+      .sort({ timeStamp: -1 })
+      .populate("author", "nickname")
+      .exec(),
+    await Post.countDocuments(filter).exec(),
+  ]);
 };
 
 module.exports = { getPostsByQuery };
